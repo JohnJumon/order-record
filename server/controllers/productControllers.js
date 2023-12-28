@@ -31,6 +31,38 @@ const fetchProducts = async (req, res) => {
     }
 }
 
+const fetchProduct = async (req, res) => {
+    try {
+        const productId = req.params.id;
+        const product = await Product.findById(productId);
+
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        res.status(200).json({ product });
+    } catch (error) {
+        console.error('Error retrieving product:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+
+const checkProduct = async (req, res) => {
+    try {
+        const productCode = req.params.code;
+        const existingProduct = await Product.findOne({ productCode })
+        if(existingProduct){
+            res.json({ exists: !!existingProduct, _id: existingProduct._id});
+        }
+        else{
+            res.json({ exists: !!existingProduct});
+        }
+    } catch (error) {
+        console.error('Error checking product existence:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+
 const updateProduct = async (req, res) => {
     try {
         const productId = req.params.id;
@@ -51,7 +83,7 @@ const updateProduct = async (req, res) => {
 
         res.status(200).json({ product: updatedProduct });
     } catch (error) {
-        console.error('Error updating product:', err);
+        console.error('Error updating product:', error);
         res.status(500).json({
             message: 'Internal Server Error'
         });
@@ -60,6 +92,8 @@ const updateProduct = async (req, res) => {
 
 module.exports = {
     fetchProducts,
+    fetchProduct,
     createProduct,
     updateProduct,
+    checkProduct,
 };

@@ -46,11 +46,27 @@ const fetchCustomer = async (req, res) => {
     }
 }
 
+const checkCustomer = async (req, res) => {
+    try {
+        const phoneNumber = req.params.number;
+        const existingCustomer = await Customer.findOne({ phoneNumber })
+        if(existingCustomer){
+            res.json({ exists: !!existingCustomer, _id: existingCustomer._id});
+        }
+        else{
+            res.json({ exists: !!existingCustomer});
+        }
+    } catch (error) {
+        console.error('Error checking customer existence:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+
 const updateCustomer = async (req, res) => {
     try {
         const customerId = req.params.id;
         const { phoneNumber, customerName } = req.body;
-        const updatedCustomer = await Product.findByIdAndUpdate(
+        const updatedCustomer = await Customer.findByIdAndUpdate(
             customerId,
             {
                 phoneNumber,
@@ -65,7 +81,7 @@ const updateCustomer = async (req, res) => {
 
         res.status(200).json({ customer: updatedCustomer });
     } catch (error) {
-        console.error('Error updating customer:', err);
+        console.error('Error updating customer:', error);
         res.status(500).json({
             message: 'Internal Server Error'
         });
@@ -77,4 +93,5 @@ module.exports = {
     fetchCustomers,
     createCustomer,
     updateCustomer,
+    checkCustomer,
 };

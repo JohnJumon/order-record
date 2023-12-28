@@ -26,9 +26,13 @@ const createOrder = async (req, res) => {
 
 const fetchOrders = async (req, res) => {
     try {
-        const { searchTerm, statusFilter, startDate, endDate } = req.query;
+        const { customerId, searchTerm, statusFilter, startDate, endDate } = req.query;
 
         let query = {};
+
+        if (customerId) {
+            query['customer'] = customerId;
+        }
 
         if (statusFilter !== undefined && statusFilter !== '') {
             query['orderStatus'] = statusFilter;
@@ -41,12 +45,12 @@ const fetchOrders = async (req, res) => {
         let orders;
 
         if (searchTerm) {
-            orders = await Order.find(query).populate('customer');
+            orders = await Order.find(query).populate('customer').populate('items.product');
             orders = orders.filter(order =>
                 order.customer.customerName.toLowerCase().includes(searchTerm.toLowerCase())
             );
         } else {
-            orders = await Order.find(query).populate('customer');
+            orders = await Order.find(query).populate('customer').populate('items.product');
         }
 
         res.json({ orders });
