@@ -1,19 +1,6 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
-const signup = async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        const hashedPassword = bcrypt.hashSync(password, 8);
-        await User.create({ username, password: hashedPassword })
-        res.sendStatus(200);
-    } catch (error){
-        console.error('Error creating user:', error);
-        res.status(500).json({
-            message: 'Internal Server Error'
-        });
-    }
-}
 
 const login = async (req, res) => {
     try {
@@ -49,7 +36,6 @@ const checkAuth = (req, res) => {
 }
 
 module.exports = {
-    signup,
     login,
     logout,
     checkAuth
