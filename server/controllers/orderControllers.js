@@ -2,9 +2,9 @@ const Order = require('../models/order');
 
 const createOrder = async (req, res) => {
     try {
-        const { clientName, items, orderStatus } = req.body;
+        const { customer, items, orderStatus } = req.body;
         const newOrder = await Order.create({
-            clientName,
+            customer,
             items: items.map(item => ({
                 product: item.product,
                 quantity: item.quantity
@@ -26,7 +26,29 @@ const createOrder = async (req, res) => {
 
 const fetchOrders = async (req, res) => {
     try {
-        const orders = await Order.find();
+        const { searchTerm, statusFilter, startDate, endDate } = req.query;
+
+        let query = {};
+
+        if (statusFilter !== undefined && statusFilter !== '') {
+            query['orderStatus'] = statusFilter;
+        }
+
+        if (startDate && endDate) {
+            query['orderDate'] = { $gte: new Date(startDate), $lte: new Date(endDate) };
+        }
+
+        let orders;
+
+        if (searchTerm) {
+            orders = await Order.find(query).populate('customer');
+            orders = orders.filter(order =>
+                order.customer.customerName.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        } else {
+            orders = await Order.find(query).populate('customer');
+        }
+
         res.json({ orders });
     } catch (error) {
         console.error('Error fetching orders:', error);
@@ -37,7 +59,10 @@ const fetchOrders = async (req, res) => {
 const fetchOrder = async (req, res) => {
     try {
         const orderId = req.params.id;
-        const order = await Order.findById(orderId);
+        const order = await Order.findById(orderId).populate('customer').populate({
+            path: 'items.product',
+            model: 'Product',
+          });
 
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
@@ -52,31 +77,36 @@ const fetchOrder = async (req, res) => {
 
 const updateOrder = async (req, res) => {
     try {
-        const orderId = req.params.id;
-        const { clientName, items, orderStatus } = req.body;
-        const updatedOrder = await Order.findByIdAndUpdate(
-            orderId,
-            {
-                clientName,
-                items: items.map(item => ({
-                    product: item.product,
-                    quantity: item.quantity
-                })),
-                orderStatus
-            },
-            { new: true }
-        );
-
-        if (!updatedOrder) {
-            return res.status(404).json({ message: 'Order not found' });
-        }
-
-        res.status(200).json({ order: updatedOrder });
+      const orderId = req.params.id;
+      const { customer, items, orderStatus } = req.body;
+  
+      const populatedItems = await Order.populate(items, { path: 'product', model: 'Product' });
+      const updatedOrder = await Order.findByIdAndUpdate(
+        orderId,
+        {
+          customer,
+          items: populatedItems.map(item => ({
+            product: item.product,
+            quantity: item.quantity,
+            productCode: item.product.productCode,
+            productName: item.product.productName,
+            productPrice: item.product.productPrice,
+          })),
+          orderStatus,
+        },
+        { new: true }
+      );
+  
+      if (!updatedOrder) {
+        return res.status(404).json({ message: 'Order not found' });
+      }
+  
+      res.status(200).json({ order: updatedOrder });
     } catch (error) {
-        console.error('Error updating order:', error);
-        res.status(500).json({ message: 'Internal Server Error' });
+      console.error('Error updating order:', error);
+      res.status(500).json({ message: 'Internal Server Error' });
     }
-}
+  };
 
 const deleteOrder = async (req, res) => {
     try {

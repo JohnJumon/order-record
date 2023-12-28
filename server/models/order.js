@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema({
-    clientName: { type: String, required: true, default: "-" },
+    customer: { type: mongoose.Schema.Types.ObjectId, ref: "Customer", required: true},
     orderDate: { type: Date, default: Date.now },
     items: [
         {
@@ -18,13 +18,18 @@ const orderSchema = new mongoose.Schema({
 orderSchema.pre("save", async function (next) {
     try {
         if (!this.items[0].product.productPrice) {
-            await this.populate("items.product");
-        }
-        this.items.forEach(item => {
-            item.productPrice = item.product.productPrice;
-            item.productName = item.product.productName;
-            item.productCode = item.product.productCode;
-        });
+            await Promise.all(
+                this.items.map(
+                    async (item, index) => {
+                        const path = `items.${index}.product`;
+                        await this.populate({ path });
+                        item.productPrice = item.product.productPrice;
+                        item.productName = item.product.productName;
+                        item.productCode = item.product.productCode;
+                    }
+                )
+            )
+        };
 
         next();
     } catch (error) {

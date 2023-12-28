@@ -51,7 +51,7 @@ const updateProduct = async (req, res) => {
 
         res.status(200).json({ product: updatedProduct });
     } catch (error) {
-        console.error('Error creating product:', err);
+        console.error('Error updating product:', err);
         res.status(500).json({
             message: 'Internal Server Error'
         });

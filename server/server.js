@@ -8,6 +8,7 @@ const connectDB = require('./config/connectDB');
 
 const orderController = require('./controllers/orderControllers');
 const productController = require('./controllers/productControllers');
+const customerController = require('./controllers/customerControllers');
 
 const cors = require('cors');
 
@@ -25,6 +26,11 @@ app.delete('/order/:id', orderController.deleteOrder)
 app.post('/product', productController.createProduct);
 app.get('/product', productController.fetchProducts);
 app.put('/product/:id', productController.updateProduct);
+
+app.post('/customer', customerController.createCustomer);
+app.get('/customer/:id', customerController.fetchCustomer);
+app.get('/customer', customerController.fetchCustomers);
+app.put('/customer/:id', customerController.updateCustomer);
 
 app.listen(process.env.PORT)
 
