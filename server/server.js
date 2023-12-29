@@ -19,10 +19,13 @@ const app = express();
 
 app.use(cors({
   origin: true,
+  methods: ["GET", "POST", "PUT"],
   credentials: true
 }));
 app.use(express.json());
 app.use(cookieParser());
+
+app.get('/', (req, res) => {res.json('Hello World!')})
 
 app.post('/order', requireAuth, orderController.createOrder);
 app.get('/order', requireAuth, orderController.fetchOrders);
@@ -45,7 +48,5 @@ app.get('/customer/check/:number', requireAuth, customerController.checkCustomer
 app.post('/login', userController.login)
 app.get('/logout', userController.logout)
 app.get('/check-auth', requireAuth, userController.checkAuth);
-
-app.listen(process.env.PORT)
 
 connectDB()
