@@ -11,12 +11,7 @@ const login = async (req, res) => {
         if(!passwordMatch) return res.sendStatus(401);
         const exp = Date.now() + 1000 * 60 * 60 * 12
         const token = jwt.sign({ sub: user._id, exp }, process.env.SECRET)
-        res.cookie("Authorization", token, {
-            expires: new Date(exp),
-            httpOnly: true,
-            sameSite: 'lax',
-            secure: true,
-        })
+        res.header('Authorization', `Bearer ${token}`);
         res.header('Access-Control-Allow-Credentials', true)
         res.sendStatus(200);
     } catch (error){

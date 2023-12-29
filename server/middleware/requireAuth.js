@@ -3,8 +3,13 @@ const User = require('../models/user');
 
 const requireAuth = async (req, res, next) => {
     try {
-        const token = req.cookies.Authorization;
+        const authorizationHeader = req.headers['Authorization'];
 
+        if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+            return res.sendStatus(401);
+        }
+
+        const token = authorizationHeader.substring(7)
         const decoded = jwt.verify(token, process.env.SECRET);
         
         if(Date.now() > decoded.exp) return res.sendStatus(401);
