@@ -24,7 +24,7 @@ export default function RequireAuth(props: Props) {
                 alignItems="center"
                 justifyContent="center"
                 mx="auto"
-                height={`calc(100vh-64px)`}
+                height={`calc(100vh - 64px)`}
             >
                 <img src={noAccess} alt="noAccess" style={{ width: "50vw", marginBottom: "8px" }} />
                 <Typography variant="h6" gutterBottom style={{ textTransform: "uppercase", marginBottom: "0px", paddingBottom: "0px", textAlign:"center"}}>
