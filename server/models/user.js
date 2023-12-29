@@ -10,8 +10,8 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("User", userSchema)
 
 const staticUser = {
-    username: process.env.USERNAME,
-    password: bcrypt.hashSync(process.env.PASSWORD, 8),
+    username: process.env.STATIC_USERNAME,
+    password: bcrypt.hashSync(process.env.STATIC_PASSWORD, 8),
 };
 
 User.create(staticUser)
