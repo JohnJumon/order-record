@@ -15,7 +15,8 @@ const app = express();
 app.use(cors({
   origin: [process.env.ORIGIN],
   methods: ["GET", "POST", "PUT"],
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(cookieParser());

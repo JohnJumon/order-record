@@ -11,6 +11,7 @@ const requireAuth = async (req, res, next) => {
 
         const user = await User.findById(decoded.sub);
         if(!user) return res.sendStatus(401);
+        res.header('Access-Control-Allow-Credentials', true)
         req.user = user
         next();
     } catch (error) {
