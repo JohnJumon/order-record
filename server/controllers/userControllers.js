@@ -14,7 +14,7 @@ const login = async (req, res) => {
         res.cookie("Authorization", token, {
             expires: new Date(exp),
             httpOnly: true,
-            sameSite: 'none',
+            sameSite: 'lax',
             secure: true,
         })
         res.header('Access-Control-Allow-Credentials', true)
