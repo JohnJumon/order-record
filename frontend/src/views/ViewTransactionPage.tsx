@@ -293,7 +293,7 @@ const ViewTransactionPage: React.FC = () => {
                     renderInput={(params) => (
                         <TextField {...params} label="Nomor Telepon" onChange={handlePhoneNumberChange} margin='normal' value={phoneNumber} />
                     )}
-                    onChange={(event, newValue) => {
+                    onChange={(_, newValue) => {
                         if (newValue && typeof newValue !== 'string') {
                             setPhoneNumber(newValue.phoneNumber || '');
                             setCustomer(newValue);
@@ -328,7 +328,7 @@ const ViewTransactionPage: React.FC = () => {
                             <div style={{ marginLeft: '8px' }}>{option.productName}</div>
                         </li>
                     )}
-                    onChange={(event, newValue) => setSelectedProduct(newValue)}
+                    onChange={(_, newValue) => setSelectedProduct(newValue)}
                     renderInput={(params) => <TextField {...params} label="Kode Produk" margin="normal" />}
                 />
                 {selectedProduct && (

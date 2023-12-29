@@ -176,7 +176,7 @@ const CreateTransactionPage: React.FC = () => {
                     renderInput={(params) => (
                         <TextField {...params} label="Nomor Telepon" onChange={handlePhoneNumberChange} margin='normal' />
                     )}
-                    onChange={(event, newValue) => setCustomer(newValue as Customer | null)}
+                    onChange={(_, newValue) => setCustomer(newValue as Customer | null)}
                     freeSolo
                 />
                 {customer ? (
@@ -205,7 +205,7 @@ const CreateTransactionPage: React.FC = () => {
                             <div style={{ marginLeft: '8px' }}>{option.productName}</div>
                         </li>
                     )}
-                    onChange={(event, newValue) => setSelectedProduct(newValue)}
+                    onChange={(_, newValue) => setSelectedProduct(newValue)}
                     renderInput={(params) => <TextField {...params} label="Kode Produk" margin="normal" />}
                 />
                 {selectedProduct && (
