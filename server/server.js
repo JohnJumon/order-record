@@ -49,4 +49,8 @@ app.post('/login', userController.login)
 app.get('/logout', userController.logout)
 app.get('/check-auth', requireAuth, userController.checkAuth);
 
+app.listen(3001, () => {
+  console.log("Server is running");
+})
+
 connectDB()
