@@ -1,0 +1,30 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "/frontend",
+            "use": "@vercel/static"
+        },
+        {
+            "src": "/server",
+            "use": "@vercel/node"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "/api/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/$1"
+        }
+    ],
+    "frameworks": {
+        "frontend": {
+            "config": {
+                "vite": true
+            }
+        }
+    }
+}
