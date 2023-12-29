@@ -154,7 +154,7 @@ export default function MiniDrawer(props: DrawerProps) {
                         { text: 'Buat Transaksi', icon: <PostAddIcon />, to: '/buat-transaksi' },
                         { text: 'Daftar Transaksi', icon: <ViewListIcon />, to: '/daftar-transaksi' },
                         { text: 'Daftar Pelanggan', icon: <PeopleIcon />, to: '/daftar-pelanggan' },
-                    ].map(({ text, icon, to }, index) => (
+                    ].map(({ text, icon, to }) => (
                         <ListItem key={text} disablePadding sx={{ display: 'block' }}>
                             <Link to={to} style={{ textDecoration: 'none', color: 'inherit' }}>
                                 <ListItemButton
@@ -184,19 +184,9 @@ export default function MiniDrawer(props: DrawerProps) {
                                     </ListItemIcon>
                                     <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} />
                                 </ListItemButton>
-                                {index % 2 === 1 && (
-                                    <>
-                                        <Divider sx={{ backgroundColor: 'white', height: 8 }} />
-                                        <Divider sx={{ backgroundColor: theme.palette.primary.main, height: 4 }} />
-                                        <Divider sx={{ backgroundColor: 'white', height: 8 }} />
-                                    </>
-                                )}
                             </Link>
                         </ListItem>
                     ))}
-                    <Divider sx={{ backgroundColor: 'white', height: 8 }} />
-                    <Divider sx={{ backgroundColor: theme.palette.primary.main, height: 4 }} />
-                    <Divider sx={{ backgroundColor: 'white', height: 8 }} />
                     <ListItem disablePadding sx={{ display: 'block' }}>
                         <ListItemButton
                             sx={{
