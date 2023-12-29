@@ -17,6 +17,7 @@ const login = async (req, res) => {
             sameSite: 'none',
             secure: true,
         })
+        res.header('Access-Control-Allow-Credentials', true)
         res.sendStatus(200);
     } catch (error){
         console.error('Login failed:', error);
