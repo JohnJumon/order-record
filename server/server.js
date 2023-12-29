@@ -1,8 +1,3 @@
-
-if (process.env.NODE_ENV != "production") {
-  require("dotenv").config()
-}
-
 const express = require('express');
 const connectDB = require('./config/connectDB');
 
@@ -18,7 +13,7 @@ const cookieParser = require("cookie-parser");
 const app = express();
 
 app.use(cors({
-  origin: ['*'],
+  origin: [process.env.ORIGIN],
   methods: ["GET", "POST", "PUT"],
   credentials: true
 }));
