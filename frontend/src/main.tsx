@@ -13,7 +13,7 @@ import ViewProductPage from './views/ViewProductPage.tsx'
 import ViewCustomerPage from './views/ViewCustomerPage.tsx'
 import LoginPage from './views/LoginPage.tsx'
 import axios from 'axios'
-axios.defaults.baseURL = "https://order-record.vercel.app";
+axios.defaults.baseURL = "https://transaksi-toko.vercel.app/api";
 axios.defaults.withCredentials = true;
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
