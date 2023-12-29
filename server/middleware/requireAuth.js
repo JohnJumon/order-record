@@ -4,6 +4,7 @@ const User = require('../models/user');
 const requireAuth = async (req, res, next) => {
     try {
         const authorizationHeader = req.headers['Authorization'];
+        console.log(authorizationHeader)
 
         if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
             return res.sendStatus(401);
