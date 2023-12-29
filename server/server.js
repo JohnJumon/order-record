@@ -33,9 +33,9 @@ app.get('/api/order/:id', requireAuth, orderController.fetchOrder);
 app.put('/api/order/:id', requireAuth, orderController.updateOrder);
 app.delete('/api/order/:id', requireAuth, orderController.deleteOrder)
 
-app.post('/product', requireAuth, productController.createProduct);
-app.get('/product', requireAuth, productController.fetchProducts);
-app.get('/product/:id', requireAuth, productController.fetchProduct);
+app.post('/api/product', requireAuth, productController.createProduct);
+app.get('/api/product', requireAuth, productController.fetchProducts);
+app.get('/api/product/:id', requireAuth, productController.fetchProduct);
 app.put('/api/product/:id', requireAuth, productController.updateProduct);
 app.get('/api/product/check/:code', requireAuth, productController.checkProduct);
 
