@@ -25,11 +25,11 @@ export default function RequireAuth(props: Props) {
                 justifyContent="center"
                 mx="auto"
             >
-                <img src={noAccess} alt="noAccess" style={{ height: "50vh", marginBottom: "8px" }} />
-                <Typography variant="h6" gutterBottom style={{ textTransform: "uppercase", marginBottom: "0px", paddingBottom: "0px" }}>
+                <img src={noAccess} alt="noAccess" style={{ height: "20vw", marginBottom: "8px" }} />
+                <Typography variant="h6" gutterBottom style={{ textTransform: "uppercase", marginBottom: "0px", paddingBottom: "0px", textAlign:"center"}}>
                     Kamu belum login silahkan kembali ke halaman login.
                 </Typography>
-                <Typography variant="h6" gutterBottom style={{ textTransform: "uppercase", marginTop: "0px" }}>
+                <Typography variant="h6" gutterBottom style={{ textTransform: "uppercase", marginTop: "0px", textAlign:"center" }}>
                     Silahkan kembali ke halaman login.
                 </Typography>
                 <Button
