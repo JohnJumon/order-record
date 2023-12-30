@@ -3,7 +3,7 @@ const Product = require('../models/product');
 const { Storage } = require('@google-cloud/storage');
 const storage = new Storage({
     projectId: process.env.PROJECT_ID,
-    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    credentials: process.env.GOOGLE_APPLICATION_CREDENTIALS,
 });
 
 const bucketName = process.env.BUCKET_NAME;
