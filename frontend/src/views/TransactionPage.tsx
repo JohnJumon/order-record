@@ -17,14 +17,27 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import PageviewIcon from '@mui/icons-material/Pageview';
-import Tooltip from '@mui/material/Tooltip';
+import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
+import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { getStatus, formatDate, formatPriceAsRupiah } from './utility/utility';
+import PreviewIcon from '@mui/icons-material/Preview';
+
+export const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+        backgroundColor: theme.palette.common.white,
+        color: 'rgba(0, 0, 0, 0)',
+    },
+}));
 
 function Row(props: RowProps) {
     const { row, rowNumber } = props;
     const [open, setOpen] = React.useState(false);
     const navigate = useNavigate();
+
+    const imageBaseUrl = `https://storage.cloud.google.com/${import.meta.env.VITE_BUCKET_NAME}/`
 
     return (
         <React.Fragment>
@@ -46,7 +59,7 @@ function Row(props: RowProps) {
                 <TableCell align="center">{getStatus(row.orderStatus)}</TableCell>
                 <TableCell align="center">
                     <Tooltip title='Lihat Transaksi'>
-                        <IconButton color="primary" onClick={() => (navigate('/transaksi/'+row._id))}>
+                        <IconButton color="primary" onClick={() => (navigate('/transaksi/' + row._id))}>
                             <PageviewIcon />
                         </IconButton>
                     </Tooltip>
@@ -62,6 +75,7 @@ function Row(props: RowProps) {
                             <Table size="small" aria-label="order-items">
                                 <TableHead>
                                     <TableRow>
+                                        <TableCell />
                                         <TableCell>Kode Produk</TableCell>
                                         <TableCell>Nama Produk</TableCell>
                                         <TableCell align="right">Jumlah</TableCell>
@@ -71,16 +85,23 @@ function Row(props: RowProps) {
                                 <TableBody>
                                     {row.items.map((item: OrderItem, index: number) => (
                                         <TableRow key={index}>
-                                            <TableCell>{item.productCode}</TableCell>
-                                            <TableCell>{item.productName}</TableCell>
+                                            <TableCell align="center">
+                                                <LightTooltip title={<img src={imageBaseUrl + item.product.productImage} alt="Product" style={{ width: '100px', height: '100px', objectFit: 'cover', display: 'block', margin: 'auto', borderRadius: '16px' }} />}>
+                                                    <IconButton>
+                                                        <PreviewIcon />
+                                                    </IconButton>
+                                                </LightTooltip>
+                                            </TableCell>
+                                            <TableCell>{item.product.productCode}</TableCell>
+                                            <TableCell>{item.product.productName}</TableCell>
                                             <TableCell align="right">{item.quantity}</TableCell>
-                                            <TableCell align="right">{formatPriceAsRupiah(item.productPrice)}</TableCell>
+                                            <TableCell align="right">{formatPriceAsRupiah(item.product.productPrice)}</TableCell>
                                         </TableRow>
                                     ))}
                                     <TableRow>
-                                        <TableCell colSpan={3} align="left" sx={{ fontWeight: 500 }}>Total Harga</TableCell>
+                                        <TableCell colSpan={4} align="left" sx={{ fontWeight: 500 }}>Total Harga</TableCell>
                                         <TableCell align="right" sx={{ fontWeight: 500 }}>
-                                            {formatPriceAsRupiah(row.items.reduce((total, item) => total + (item.quantity * item.productPrice), 0))}
+                                            {formatPriceAsRupiah(row.items.reduce((total, item) => total + (item.quantity * item.product.productPrice), 0))}
                                         </TableCell>
                                     </TableRow>
                                 </TableBody>
@@ -206,11 +227,16 @@ export default function TransactionPage() {
     );
 }
 
-interface OrderItem {
-    productName: string;
-    quantity: number;
+interface Product {
+    productImage: string;
     productPrice: number;
     productCode: string;
+    productName: string;
+}
+
+interface OrderItem {
+    quantity: number;
+    product: Product;
 }
 
 interface OrderData {

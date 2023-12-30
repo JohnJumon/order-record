@@ -3,21 +3,18 @@ const User = require('../models/user');
 
 const requireAuth = async (req, res, next) => {
     try {
-        const authorizationHeader = req.headers['Authorization'];
-        console.log(authorizationHeader)
+        const token = req.headers.authorization;
 
-        if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+        if (!token) {
             return res.sendStatus(401);
         }
 
-        const token = authorizationHeader.substring(7)
-        const decoded = jwt.verify(token, process.env.SECRET);
+        const decoded = jwt.verify(token.replace('Bearer ', ''), process.env.SECRET);
         
         if(Date.now() > decoded.exp) return res.sendStatus(401);
 
         const user = await User.findById(decoded.sub);
         if(!user) return res.sendStatus(401);
-        res.header('Access-Control-Allow-Credentials', true)
         req.user = user
         next();
     } catch (error) {

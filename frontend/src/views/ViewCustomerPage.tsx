@@ -26,6 +26,8 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { formatPriceAsRupiah } from './utility/utility';
+import { LightTooltip } from './TransactionPage';
+import PreviewIcon from '@mui/icons-material/Preview';
 
 const ViewCustomerPage: React.FC = () => {
     const { customerId } = useParams()
@@ -39,6 +41,8 @@ const ViewCustomerPage: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(false)
     const [changesDetected, setChangesDetected] = useState<boolean>(false);
     const [openConfirmationModal, setOpenConfirmationModal] = useState<boolean>(false);
+
+    const imageBaseUrl = `https://storage.cloud.google.com/${import.meta.env.VITE_BUCKET_NAME}/`
 
     const navigate = useNavigate();
 
@@ -183,6 +187,7 @@ const ViewCustomerPage: React.FC = () => {
                     <Table>
                         <TableHead>
                             <TableRow>
+                                <TableCell />
                                 <TableCell>Kode Produk</TableCell>
                                 <TableCell>Nama Produk</TableCell>
                                 <TableCell align="right">Total Jumlah Pembelian</TableCell>
@@ -192,6 +197,13 @@ const ViewCustomerPage: React.FC = () => {
                         <TableBody>
                             {[...aggregatedProductData].sort((a, b) => b.quantity - a.quantity).map((order: OrderItem) => (
                                 <TableRow key={order.product._id}>
+                                    <TableCell align="center">
+                                        <LightTooltip title={<img src={imageBaseUrl + order.product.productImage} alt="Product" style={{ width: '100px', height: '100px', objectFit: 'cover', display: 'block', margin: 'auto', borderRadius: '16px' }} />}>
+                                            <IconButton>
+                                                <PreviewIcon />
+                                            </IconButton>
+                                        </LightTooltip>
+                                    </TableCell>
                                     <TableCell>{order.product.productCode}</TableCell>
                                     <TableCell>{order.product.productName}</TableCell>
                                     <TableCell align="right">{order.quantity}</TableCell>
@@ -200,7 +212,7 @@ const ViewCustomerPage: React.FC = () => {
 
                             ))}
                             <TableRow>
-                                <TableCell colSpan={3} align="left" sx={{ fontWeight: 500 }}>Total Harga Transaksi</TableCell>
+                                <TableCell colSpan={4} align="left" sx={{ fontWeight: 500 }}>Total Harga Transaksi</TableCell>
                                 <TableCell align="right" sx={{ fontWeight: 500 }}>
                                     {formatPriceAsRupiah(
                                         aggregatedProductData.reduce((total, item) => total + (item.quantity * item.product.productPrice), 0))
@@ -260,6 +272,7 @@ interface Product {
     productName: string;
     productPrice: number;
     productCode: string;
+    productImage: string;
 }
 
 interface OrderItem {

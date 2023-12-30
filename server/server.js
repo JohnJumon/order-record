@@ -1,4 +1,10 @@
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
+
 const express = require('express');
+const multer = require('multer');
 const connectDB = require('./config/connectDB');
 
 const orderController = require('./controllers/orderControllers');
@@ -8,20 +14,20 @@ const userController = require('./controllers/userControllers');
 const requireAuth = require('./middleware/requireAuth');
 
 const cors = require('cors');
-const cookieParser = require("cookie-parser");
 
 const app = express();
+const upload = multer()
 
 app.use(cors({
-  origin: [process.env.ORIGIN],
+  origin: ["http://localhost:5173"],
   methods: ["GET", "POST", "PUT"],
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
-app.use(cookieParser());
 
-app.get('/api', (req, res) => {res.json('Hello World!')})
+app.use(express.json());
+app.use(upload.single('image'))
+
+app.get('/api', (req, res) => { res.json('Hello World!') })
 
 app.post('/api/order', requireAuth, orderController.createOrder);
 app.get('/api/order', requireAuth, orderController.fetchOrders);
@@ -45,8 +51,6 @@ app.post('/api/login', userController.login)
 app.get('/api/logout', userController.logout)
 app.get('/api/check-auth', requireAuth, userController.checkAuth);
 
-app.listen(3001, () => {
-  console.log("Server is running");
-})
+app.listen(process.env.PORT)
 
 connectDB()

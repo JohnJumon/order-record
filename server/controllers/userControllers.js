@@ -11,9 +11,7 @@ const login = async (req, res) => {
         if(!passwordMatch) return res.sendStatus(401);
         const exp = Date.now() + 1000 * 60 * 60 * 12
         const token = jwt.sign({ sub: user._id, exp }, process.env.SECRET)
-        res.header('Authorization', `Bearer ${token}`);
-        res.header('Access-Control-Allow-Credentials', true)
-        res.sendStatus(200);
+        res.status(200).json({ token: token });
     } catch (error){
         console.error('Login failed:', error);
         res.status(500).json({
@@ -23,7 +21,6 @@ const login = async (req, res) => {
 }
 
 const logout = (req, res) => {
-    res.clearCookie("Authorization")
     res.sendStatus(200);
 }
 

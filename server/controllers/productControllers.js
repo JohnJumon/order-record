@@ -1,12 +1,30 @@
 const Product = require('../models/product');
 
+const { Storage } = require('@google-cloud/storage');
+const storage = new Storage({
+    projectId: process.env.PROJECT_ID,
+    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+});
+
+const bucketName = process.env.BUCKET_NAME;
+
 const createProduct = async (req, res) => {
     try {
         const { productCode, productName, productPrice } = req.body;
+        const imageBuffer = req.file.buffer;
+        const imageName = `images/${Date.now()}_${req.file.originalname}`;
+        const file = storage.bucket(bucketName).file(imageName);
+
+        await file.save(imageBuffer, {
+            metadata: {
+                contentType: 'image/jpeg',
+            },
+        });
         const newProduct = await Product.create({
             productCode,
             productName,
             productPrice,
+            productImage: imageName,
         });
 
         res.status(201).json({
@@ -51,11 +69,11 @@ const checkProduct = async (req, res) => {
     try {
         const productCode = req.params.code;
         const existingProduct = await Product.findOne({ productCode })
-        if(existingProduct){
-            res.json({ exists: !!existingProduct, _id: existingProduct._id});
+        if (existingProduct) {
+            res.json({ exists: !!existingProduct, _id: existingProduct._id });
         }
-        else{
-            res.json({ exists: !!existingProduct});
+        else {
+            res.json({ exists: !!existingProduct });
         }
     } catch (error) {
         console.error('Error checking product existence:', error);
@@ -66,7 +84,33 @@ const checkProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
     try {
         const productId = req.params.id;
-        const { productCode, productName, productPrice } = req.body;
+        const { productCode, productName, productPrice, productImage } = req.body;
+
+        if (req.file) {
+            const newImageBuffer = req.file.buffer;
+            const file = storage.bucket(bucketName).file(productImage);
+
+            await file.save(newImageBuffer, {
+                metadata: {
+                    contentType: 'image/jpeg',
+                },
+            });
+            const updatedProduct = await Product.findByIdAndUpdate(
+                productId,
+                {
+                    productCode,
+                    productName,
+                    productPrice,
+                },
+                { new: true }
+            );
+
+            if (!updatedProduct) {
+                return res.status(404).json({ message: 'Product not found' });
+            }
+
+            return res.status(200).json({ product: updatedProduct });
+        }
         const updatedProduct = await Product.findByIdAndUpdate(
             productId,
             {

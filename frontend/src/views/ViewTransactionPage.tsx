@@ -32,12 +32,15 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import _ from 'lodash';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { formatPriceAsRupiah, getStatus, formatDate } from './utility/utility';
+import { LightTooltip } from './TransactionPage';
+import PreviewIcon from '@mui/icons-material/Preview';
 
 interface Product {
     _id: string;
     productCode: string;
     productName: string;
     productPrice: number;
+    productImage: string;
 }
 
 interface Customer {
@@ -83,6 +86,8 @@ const ViewTransactionPage: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [changesDetected, setChangesDetected] = useState<boolean>(false);
     const [openConfirmationModal, setOpenConfirmationModal] = useState<boolean>(false);
+
+    const imageBaseUrl = `https://storage.cloud.google.com/${import.meta.env.VITE_BUCKET_NAME}/`
 
     useEffect(() => {
         const fetchOrder = async () => {
@@ -360,6 +365,7 @@ const ViewTransactionPage: React.FC = () => {
                             <Table>
                                 <TableHead>
                                     <TableRow>
+                                        <TableCell />
                                         <TableCell>Kode Produk</TableCell>
                                         <TableCell>Nama Produk</TableCell>
                                         <TableCell align='right'>Jumlah</TableCell>
@@ -370,21 +376,28 @@ const ViewTransactionPage: React.FC = () => {
                                 <TableBody>
                                     {selectedProducts.map((selectedProduct, index) => (
                                         <TableRow key={index}>
-                                            <TableCell>{selectedProduct.product.productCode}</TableCell>
-                                            <TableCell>{selectedProduct.product.productName}</TableCell>
-                                            <TableCell align="right">{selectedProduct.quantity}</TableCell>
-                                            <TableCell align='right'>{formatPriceAsRupiah(selectedProduct.product.productPrice)}</TableCell>
-                                            <TableCell align='center'>
-                                                <Tooltip title='Hapus'>
-                                                    <IconButton color="error" onClick={() => handleDeleteProduct(index)}>
-                                                        <DeleteIcon />
+                                            <TableCell align="center">
+                                                <LightTooltip title={<img src={imageBaseUrl + selectedProduct.product.productImage} alt="Product" style={{ width: '100px', height: '100px', objectFit: 'cover', display: 'block', margin: 'auto', borderRadius: '16px' }} />}>
+                                                    <IconButton>
+                                                        <PreviewIcon />
                                                     </IconButton>
-                                                </Tooltip>
+                                                </LightTooltip>
                                             </TableCell>
+                                            <TableCell>{selectedProduct.product.productCode}</TableCell>
+                                                <TableCell>{selectedProduct.product.productName}</TableCell>
+                                                <TableCell align="right">{selectedProduct.quantity}</TableCell>
+                                                <TableCell align='right'>{formatPriceAsRupiah(selectedProduct.product.productPrice)}</TableCell>
+                                                <TableCell align='center'>
+                                                    <Tooltip title='Hapus'>
+                                                        <IconButton color="error" onClick={() => handleDeleteProduct(index)}>
+                                                            <DeleteIcon />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </TableCell>
                                         </TableRow>
                                     ))}
                                     <TableRow>
-                                        <TableCell colSpan={3} align='left' sx={{ fontWeight: 500 }}>Total Harga</TableCell>
+                                        <TableCell colSpan={4} align='left' sx={{ fontWeight: 500 }}>Total Harga</TableCell>
                                         <TableCell align='right' sx={{ fontWeight: 500 }}>
                                             {formatPriceAsRupiah(selectedProducts.reduce(
                                                 (total, item) => total + item.product.productPrice * item.quantity, 0

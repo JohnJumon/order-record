@@ -46,9 +46,12 @@ const authStore = create<AuthStore>((set) => ({
     login: async () => {
         try {
             const { loginForm } = authStore.getState();
-            await axios.post('/login', loginForm, {
+            const res = await axios.post('/login', loginForm, {
                 withCredentials: true,
             });
+            const token = res.data.token;
+            localStorage.setItem('token', token);
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
             set({ loggedIn: true })
             return true;
         } catch (error) {
@@ -58,18 +61,27 @@ const authStore = create<AuthStore>((set) => ({
     },
 
     checkAuth: async () => {
-        try {
-            await axios.get('/check-auth')
-            set({ loggedIn: true })
-        } catch (err) {
+        const token = localStorage.getItem('token')
+        if (!token) {
             set({ loggedIn: false })
         }
-
+        else {
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+            try {
+                await axios.get('/check-auth')
+                set({ loggedIn: true })
+            }catch(error){
+                set({ loggedIn: false})
+            }
+            
+        }
     },
 
     logout: async () => {
+        delete axios.defaults.headers.common['Authorization'];
+        localStorage.removeItem('token');
         await axios.get('/logout')
-        set({loggedIn: false})
+        set({ loggedIn: false })
     }
 }));
 
