@@ -37,7 +37,7 @@ function Row(props: RowProps) {
     const [open, setOpen] = React.useState(false);
     const navigate = useNavigate();
 
-    const imageBaseUrl = `https://storage.cloud.google.com/${VITE_BUCKET_NAME}/`
+    const imageBaseUrl = `https://storage.cloud.google.com/${import.meta.env.BUCKET_NAME}/`
 
     return (
         <React.Fragment>

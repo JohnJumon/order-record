@@ -13,7 +13,7 @@ import ViewProductPage from './views/ViewProductPage.tsx'
 import ViewCustomerPage from './views/ViewCustomerPage.tsx'
 import LoginPage from './views/LoginPage.tsx'
 import axios from 'axios'
-axios.defaults.baseURL = VITE_BASE_URL;
+axios.defaults.baseURL = import.meta.env.SERVER_BASE_URL;
 axios.defaults.withCredentials = true;
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

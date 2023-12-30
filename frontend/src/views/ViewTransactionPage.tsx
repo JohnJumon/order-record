@@ -87,7 +87,7 @@ const ViewTransactionPage: React.FC = () => {
     const [changesDetected, setChangesDetected] = useState<boolean>(false);
     const [openConfirmationModal, setOpenConfirmationModal] = useState<boolean>(false);
 
-    const imageBaseUrl = `https://storage.cloud.google.com/${import.meta.env.VITE_BUCKET_NAME}/`
+    const imageBaseUrl = `https://storage.cloud.google.com/${import.meta.env.BUCKET_NAME}/`
 
     useEffect(() => {
         const fetchOrder = async () => {
