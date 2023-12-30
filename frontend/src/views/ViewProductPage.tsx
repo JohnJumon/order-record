@@ -40,7 +40,7 @@ const ViewProductPage: React.FC = () => {
 
     const navigate = useNavigate();
 
-    const imageBaseUrl = `https://storage.cloud.google.com/${import.meta.env.VITE_BUCKET_NAME}/`
+    const imageBaseUrl = `https://storage.googleapis.com/${import.meta.env.VITE_BUCKET_NAME}/`
 
     useEffect(() => {
         const fetchProduct = async () => {

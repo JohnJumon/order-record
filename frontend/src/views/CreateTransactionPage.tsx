@@ -16,12 +16,15 @@ import TableRow from '@mui/material/TableRow';
 import Tooltip from '@mui/material/Tooltip';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { LightTooltip } from './TransactionPage';
+import PreviewIcon from '@mui/icons-material/Preview';
 
 interface Product {
     _id: string;
     productCode: string;
     productName: string;
     productPrice: number;
+    productImage: string;
 }
 
 interface Customer {
@@ -46,6 +49,8 @@ const CreateTransactionPage: React.FC = () => {
     const [quantity, setQuantity] = useState<number | ''>('');
     const [orderCreated, setOrderCreated] = useState<boolean>(true)
     const [rerenderKey, setRerenderKey] = useState<number>(0);
+
+    const imageBaseUrl = `https://storage.googleapis.com/${import.meta.env.VITE_BUCKET_NAME}/`
 
     useEffect(() => {
         if (orderCreated) {
@@ -237,6 +242,7 @@ const CreateTransactionPage: React.FC = () => {
                             <Table>
                                 <TableHead>
                                     <TableRow>
+                                        <TableCell />
                                         <TableCell>Kode Produk</TableCell>
                                         <TableCell>Nama Produk</TableCell>
                                         <TableCell align='right'>Jumlah</TableCell>
@@ -247,6 +253,13 @@ const CreateTransactionPage: React.FC = () => {
                                 <TableBody>
                                     {selectedProducts.map((selectedProduct, index) => (
                                         <TableRow key={index}>
+                                            <TableCell align="center">
+                                                <LightTooltip title={<img src={imageBaseUrl + selectedProduct.product.productImage} alt="Product" style={{ width: '100px', height: '100px', objectFit: 'cover', display: 'block', margin: 'auto', borderRadius: '16px' }} />}>
+                                                    <IconButton>
+                                                        <PreviewIcon />
+                                                    </IconButton>
+                                                </LightTooltip>
+                                            </TableCell>
                                             <TableCell>{selectedProduct.product.productCode}</TableCell>
                                             <TableCell>{selectedProduct.product.productName}</TableCell>
                                             <TableCell align="right">{selectedProduct.quantity}</TableCell>
