@@ -6,7 +6,7 @@ export const formatPriceAsRupiah = (price: number): string => {
 };
 
 export const getStatus = (status: number): string => {
-    return status === 0 ? "Dikirim" : status === 1 ? "Selesai" : "Unknown";
+    return status === 0 ? "Order" : status === 1 ? "Pick Up" : status === 2 ? "Dikirim" : status === 3 ? "Selesai" : status === 4 ? "Sold Out" : "Unknown";
 };
 
 export const formatDate = (dateString: string): string => {

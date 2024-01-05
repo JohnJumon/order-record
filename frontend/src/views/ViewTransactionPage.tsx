@@ -279,8 +279,11 @@ const ViewTransactionPage: React.FC = () => {
                                 id: 'order-status',
                             }}
                         >
-                            <MenuItem value={0}>Dikirim</MenuItem>
-                            <MenuItem value={1}>Selesai</MenuItem>
+                            <MenuItem value={0}>Order</MenuItem>
+                            <MenuItem value={1}>Pick Up</MenuItem>
+                            <MenuItem value={2}>Dikirim</MenuItem>
+                            <MenuItem value={3}>Selesai</MenuItem>
+                            <MenuItem value={4}>Sold Out</MenuItem>
                         </Select>
                     </Stack>
                 </Grid>

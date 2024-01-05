@@ -52,7 +52,7 @@ const AddProductPage: React.FC = () => {
     const handleAddProduct = async () => {
         try {
             const formData = new FormData();
-            formData.append('productCode', productCode);
+            formData.append('productCode', productCode.toUpperCase());
             formData.append('productName', productName);
             formData.append('productPrice', String(productPrice));
             if (image) {

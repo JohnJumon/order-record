@@ -28,6 +28,71 @@ import Paper from '@mui/material/Paper';
 import { formatPriceAsRupiah } from './utility/utility';
 import { LightTooltip } from './TransactionPage';
 import PreviewIcon from '@mui/icons-material/Preview';
+import { formatDate } from './utility/utility';
+import Collapse from '@mui/material/Collapse';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+
+function Row(props: RowProps) {
+    const { row } = props;
+    const [open, setOpen] = React.useState(false);
+
+    const imageBaseUrl = `https://storage.googleapis.com/${import.meta.env.VITE_BUCKET_NAME}/`
+
+    return (
+        <React.Fragment>
+            <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
+                <TableCell>
+                    <IconButton
+                        aria-label="expand row"
+                        size="small"
+                        onClick={() => setOpen(!open)}
+                    >
+                        {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                    </IconButton>
+                </TableCell>
+                <TableCell align="center">
+                    <LightTooltip title={<img src={imageBaseUrl + row.product.productImage} alt="Product" style={{ width: '100px', height: '100px', objectFit: 'cover', display: 'block', margin: 'auto', borderRadius: '16px' }} />}>
+                        <IconButton>
+                            <PreviewIcon />
+                        </IconButton>
+                    </LightTooltip>
+                </TableCell>
+                <TableCell>{row.product.productCode}</TableCell>
+                <TableCell>{row.product.productName}</TableCell>
+                <TableCell align="right">{row.quantity}</TableCell>
+                <TableCell align="right">{formatPriceAsRupiah(row.product.productPrice)}</TableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+                    <Collapse in={open} timeout="auto" unmountOnExit>
+                        <Box sx={{ margin: 1 }}>
+                            <Typography variant="h6" gutterBottom component="div">
+                                Daftar Riwayat Pembelian
+                            </Typography>
+                            <Table size="small" aria-label="order-items">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Tanggal Transaksi</TableCell>
+                                        <TableCell align='right'>Jumlah Pembelian</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {row.history.map((history: OrderItemHistory, index: number) => (
+                                        <TableRow key={index}>
+                                            <TableCell>{history.orderDate}</TableCell>
+                                            <TableCell align='right'>{history.quantity}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </Box>
+                    </Collapse>
+                </TableCell>
+            </TableRow>
+        </React.Fragment>
+    );
+}
 
 const ViewCustomerPage: React.FC = () => {
     const { customerId } = useParams()
@@ -41,8 +106,6 @@ const ViewCustomerPage: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(false)
     const [changesDetected, setChangesDetected] = useState<boolean>(false);
     const [openConfirmationModal, setOpenConfirmationModal] = useState<boolean>(false);
-
-    const imageBaseUrl = `https://storage.googleapis.com/${import.meta.env.VITE_BUCKET_NAME}/`
 
     const navigate = useNavigate();
 
@@ -75,21 +138,31 @@ const ViewCustomerPage: React.FC = () => {
             const aggregatedData: OrderItem[] = [];
 
             orders.forEach((order: Order) => {
+                const date = formatDate(order.orderDate)
                 order.items.forEach((item: OrderItem) => {
                     const existingProduct = aggregatedData.find((data) => data.product._id === item.product._id);
 
                     if (existingProduct) {
                         existingProduct.quantity += item.quantity;
+                        existingProduct.history.unshift({
+                            orderDate: date,
+                            quantity: item.quantity
+                        })
                     } else {
                         aggregatedData.push({
                             product: item.product,
                             quantity: item.quantity,
+                            history: [{
+                                orderDate: date,
+                                quantity: item.quantity,
+                            }]
                         });
                     }
                 });
             });
 
             setAggregatedProductData(aggregatedData);
+            console.log(aggregatedData)
         };
         processOrders()
     }, [orders]);
@@ -188,6 +261,7 @@ const ViewCustomerPage: React.FC = () => {
                         <TableHead>
                             <TableRow>
                                 <TableCell />
+                                <TableCell />
                                 <TableCell>Kode Produk</TableCell>
                                 <TableCell>Nama Produk</TableCell>
                                 <TableCell align="right">Total Jumlah Pembelian</TableCell>
@@ -196,23 +270,10 @@ const ViewCustomerPage: React.FC = () => {
                         </TableHead>
                         <TableBody>
                             {[...aggregatedProductData].sort((a, b) => b.quantity - a.quantity).map((order: OrderItem) => (
-                                <TableRow key={order.product._id}>
-                                    <TableCell align="center">
-                                        <LightTooltip title={<img src={imageBaseUrl + order.product.productImage} alt="Product" style={{ width: '100px', height: '100px', objectFit: 'cover', display: 'block', margin: 'auto', borderRadius: '16px' }} />}>
-                                            <IconButton>
-                                                <PreviewIcon />
-                                            </IconButton>
-                                        </LightTooltip>
-                                    </TableCell>
-                                    <TableCell>{order.product.productCode}</TableCell>
-                                    <TableCell>{order.product.productName}</TableCell>
-                                    <TableCell align="right">{order.quantity}</TableCell>
-                                    <TableCell align="right">{formatPriceAsRupiah(order.product.productPrice)}</TableCell>
-                                </TableRow>
-
+                                <Row key={order.product._id} row={order} />
                             ))}
                             <TableRow>
-                                <TableCell colSpan={4} align="left" sx={{ fontWeight: 500 }}>Total Harga Transaksi</TableCell>
+                                <TableCell colSpan={5} align="left" sx={{ fontWeight: 500 }}>Total Harga Transaksi</TableCell>
                                 <TableCell align="right" sx={{ fontWeight: 500 }}>
                                     {formatPriceAsRupiah(
                                         aggregatedProductData.reduce((total, item) => total + (item.quantity * item.product.productPrice), 0))
@@ -275,12 +336,23 @@ interface Product {
     productImage: string;
 }
 
+interface OrderItemHistory {
+    orderDate: string;
+    quantity: number;
+}
+
 interface OrderItem {
     product: Product;
     quantity: number;
+    history: OrderItemHistory[];
 }
 
 interface Order {
     _id: string;
     items: OrderItem[];
+    orderDate: string;
+}
+
+interface RowProps {
+    row: OrderItem
 }

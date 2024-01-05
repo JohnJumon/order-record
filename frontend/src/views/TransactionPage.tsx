@@ -145,7 +145,6 @@ export default function TransactionPage() {
                     new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
             );
             setOrders(sortedTransactions);
-            console.log(sortedTransactions)
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -210,8 +209,11 @@ export default function TransactionPage() {
                     inputProps={{ 'aria-label': 'Without label' }}
                 >
                     <MenuItem value={''}>Semua</MenuItem>
-                    <MenuItem value={0}>Dikirim</MenuItem>
-                    <MenuItem value={1}>Selesai</MenuItem>
+                    <MenuItem value={0}>Order</MenuItem>
+                    <MenuItem value={1}>Pick Up</MenuItem>
+                    <MenuItem value={2}>Dikirim</MenuItem>
+                    <MenuItem value={3}>Selesai</MenuItem>
+                    <MenuItem value={4}>Sold Out</MenuItem>
                 </Select>
             </Stack>
 

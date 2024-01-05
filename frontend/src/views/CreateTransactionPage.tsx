@@ -85,11 +85,11 @@ const CreateTransactionPage: React.FC = () => {
 
     const handlePhoneNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setPhoneNumber(event.target.value);
-        setCustomer(null);
     };
 
     const handleCustomerNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setCustomerName(event.target.value);
+        setCustomer(null);
     };
 
     const handleAddProduct = () => {
@@ -171,32 +171,32 @@ const CreateTransactionPage: React.FC = () => {
             <Box key={rerenderKey}>
                 <Autocomplete
                     options={customers}
-                    getOptionLabel={(option) => (typeof option === 'string' ? option : option.phoneNumber || '')}
+                    getOptionLabel={(option) => (typeof option === 'string' ? option : option.customerName || '')}
                     renderOption={(props, option) => (
                         <li {...props}>
-                            <div>{option.phoneNumber}</div>
-                            <div style={{ marginLeft: '8px' }}>{option.customerName}</div>
+                            <div>{option.customerName}</div>
+                            <div style={{ marginLeft: '8px' }}>{option.phoneNumber}</div>
                         </li>
                     )}
                     renderInput={(params) => (
-                        <TextField {...params} label="Nomor Telepon" onChange={handlePhoneNumberChange} margin='normal' />
+                        <TextField {...params} label="Nama Konsumen" onChange={handleCustomerNameChange} margin='normal' />
                     )}
                     onChange={(_, newValue) => setCustomer(newValue as Customer | null)}
                     freeSolo
                 />
                 {customer ? (
                     <TextField
-                        label="Nama Konsumen"
-                        value={customer.customerName}
+                        label="Nomor Telepon"
+                        value={customer.phoneNumber}
+                        disabled
                         fullWidth
                         margin="normal"
-                        disabled
                     />
                 ) : (
                     <TextField
-                        label="Nama Konsumen"
-                        value={customerName}
-                        onChange={handleCustomerNameChange}
+                        label="Nomor Telepon"
+                        value={phoneNumber}
+                        onChange={handlePhoneNumberChange}
                         fullWidth
                         margin="normal"
                     />
