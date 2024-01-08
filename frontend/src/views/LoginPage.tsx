@@ -53,24 +53,27 @@ export default function LoginPage() {
                     </Typography>
                     <Box component="form" noValidate sx={{ mt: 1 }}>
                         <TextField
+                            name='username'
                             margin="normal"
                             required
                             fullWidth
                             id="username"
                             label="Username"
+                            type='text'
                             autoFocus
                             onChange={(e) => store.updateUsername(e.target.value)}
                             autoComplete='username'
                         />
                         <TextField
+                            name='password'
                             margin="normal"
                             required
                             fullWidth
                             label="Password"
                             type="password"
                             id="password"
-                            onChange={(e) => store.updatePassword(e.target.value)}
                             autoComplete='current-password'
+                            onChange={(e) => store.updatePassword(e.target.value)}
                         />
                         <Button
                             fullWidth
