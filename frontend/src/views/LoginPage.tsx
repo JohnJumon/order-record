@@ -60,6 +60,7 @@ export default function LoginPage() {
                             label="Username"
                             autoFocus
                             onChange={(e) => store.updateUsername(e.target.value)}
+                            autoComplete='username'
                         />
                         <TextField
                             margin="normal"
@@ -69,6 +70,7 @@ export default function LoginPage() {
                             type="password"
                             id="password"
                             onChange={(e) => store.updatePassword(e.target.value)}
+                            autoComplete='current-password'
                         />
                         <Button
                             fullWidth

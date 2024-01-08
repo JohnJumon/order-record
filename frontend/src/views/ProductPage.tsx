@@ -54,8 +54,9 @@ export default function ProductPage() {
 
     const filteredProducts = products.filter(
         (product) =>
+            product.production && (
             product.productCode.toUpperCase().includes(searchTerm.toUpperCase()) ||
-            product.productName.toUpperCase().includes(searchTerm.toUpperCase())
+            product.productName.toUpperCase().includes(searchTerm.toUpperCase()) )
     );
 
     const header = (
@@ -99,6 +100,7 @@ interface ProductData {
     productName: string;
     productPrice: number;
     productCode: string;
+    production: boolean;
 }
 
 interface RowProps {

@@ -106,6 +106,7 @@ const ViewCustomerPage: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(false)
     const [changesDetected, setChangesDetected] = useState<boolean>(false);
     const [openConfirmationModal, setOpenConfirmationModal] = useState<boolean>(false);
+    const [openBlacklistModal, setOpenBlacklistModal] = useState<boolean>(false);
 
     const navigate = useNavigate();
 
@@ -186,6 +187,10 @@ const ViewCustomerPage: React.FC = () => {
         await updateCustomer();
     };
 
+    const handleBlacklistCustomer = async () => {
+        setOpenBlacklistModal(true);
+    };
+
     const updateCustomer = async () => {
         try {
             setLoading(true)
@@ -213,6 +218,20 @@ const ViewCustomerPage: React.FC = () => {
         }
     };
 
+    const blacklistCustomer = async () => {
+        try {
+            setLoading(true)
+            await axios.put(`/customer/${customerId}/blacklist`);
+            console.log('Customer blacklisted');
+            toast.success('Data Pelanggan berhasil di-blacklist.', { autoClose: 3000, onClose: () => {navigate('/daftar-pelanggan')} });
+        } catch (error) {
+            console.error('Error blacklisting customer:', error);
+            toast.error('Data Pelanggan gagal di-blacklist.', { autoClose: 3000 });
+        } finally {
+            setLoading(false)
+        }
+    };
+
     const handleCloseConfirmationModal = () => {
         setOpenConfirmationModal(false);
     };
@@ -220,6 +239,15 @@ const ViewCustomerPage: React.FC = () => {
     const handleConfirmUpdate = () => {
         updateCustomer();
         setOpenConfirmationModal(false);
+    };
+
+    const handleCloseBlacklistModal = () => {
+        setOpenBlacklistModal(false);
+    };
+
+    const handleBlacklistUpdate = () => {
+        blacklistCustomer();
+        setOpenBlacklistModal(false);
     };
 
     return (
@@ -283,6 +311,9 @@ const ViewCustomerPage: React.FC = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+                <Button variant="contained" color="error" onClick={handleBlacklistCustomer} sx={{ marginLeft: 'auto', p: 2, marginTop: 2, display: 'block', width: '100%' }}>
+                    Blacklist Pelanggan
+                </Button>
             </Box>
             <Dialog open={openConfirmationModal} onClose={handleCloseConfirmationModal}>
                 <DialogTitle>Perubahan Terdeteksi</DialogTitle>
@@ -318,6 +349,22 @@ const ViewCustomerPage: React.FC = () => {
                     </Button>
                     <Button onClick={handleConfirmUpdate} color="primary">
                         Simpan
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={openBlacklistModal} onClose={handleCloseBlacklistModal}>
+                <DialogTitle>Blacklist Pelanggan</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Apakah Anda yakin ingin melakukan blacklist terhadap pelanggan? Perubahan yang disimpan tidak bisa dibatalkan!
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseBlacklistModal} color="warning">
+                        Batal
+                    </Button>
+                    <Button onClick={handleBlacklistUpdate} color="primary">
+                        Konfirmasi
                     </Button>
                 </DialogActions>
             </Dialog>

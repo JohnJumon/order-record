@@ -134,10 +134,36 @@ const updateProduct = async (req, res) => {
     }
 };
 
+const productionProduct = async (req, res) => {
+    try {
+        const productId = req.params.id;
+        
+        const updatedProduct = await Product.findByIdAndUpdate(
+            productId,
+            {
+                production: false
+            },
+            { new: true }
+        );
+
+        if (!updatedProduct) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        res.status(200).json({ product: updatedProduct });
+    } catch (error) {
+        console.error('Error updating product:', error);
+        res.status(500).json({
+            message: 'Internal Server Error'
+        });
+    }
+};
+
 module.exports = {
     fetchProducts,
     fetchProduct,
     createProduct,
     updateProduct,
     checkProduct,
+    productionProduct,
 };

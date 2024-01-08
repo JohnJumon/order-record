@@ -43,6 +43,7 @@ export default function CustomerPage() {
             try {
                 const response = await axios.get('/customer');
                 setCustomers(response.data.customers);
+                console.log(response.data.customers)
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -53,8 +54,9 @@ export default function CustomerPage() {
 
     const filteredCustomer = customers.filter(
         (customer) =>
+            customer.blacklist === false && (
             customer.phoneNumber.toUpperCase().includes(searchTerm.toUpperCase()) ||
-            customer.customerName.toUpperCase().includes(searchTerm.toUpperCase())
+            customer.customerName.toUpperCase().includes(searchTerm.toUpperCase()) )
     );
 
     const header = (
@@ -96,6 +98,7 @@ interface CustomerData {
     _id: string,
     customerName: string;
     phoneNumber: string;
+    blacklist: boolean;
 }
 
 interface RowProps {

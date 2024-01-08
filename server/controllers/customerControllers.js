@@ -88,10 +88,35 @@ const updateCustomer = async (req, res) => {
     }
 };
 
+const blacklistCustomer = async (req, res) => {
+    try {
+        const customerId = req.params.id;
+        const updatedCustomer = await Customer.findByIdAndUpdate(
+            customerId,
+            {
+                blacklist: true
+            },
+            { new: true }
+        );
+
+        if (!updatedCustomer) {
+            return res.status(404).json({ message: 'Customer not found' });
+        }
+
+        res.status(200).json({ customer: updatedCustomer });
+    } catch (error) {
+        console.error('Error blacklisting customer:', error);
+        res.status(500).json({
+            message: 'Internal Server Error'
+        });
+    }
+};
+
 module.exports = {
     fetchCustomer,
     fetchCustomers,
     createCustomer,
     updateCustomer,
     checkCustomer,
+    blacklistCustomer
 };

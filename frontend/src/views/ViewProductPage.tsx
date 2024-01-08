@@ -34,6 +34,7 @@ const ViewProductPage: React.FC = () => {
     const [changesDetected, setChangesDetected] = useState<boolean>(false);
     const [imageChangesDetected, setImageChangesDetected] = useState<boolean>(false);
     const [openConfirmationModal, setOpenConfirmationModal] = useState<boolean>(false);
+    const [openChangeProductionModal, setOpenChangeProductionModal] = useState<boolean>(false);
 
     const [rerenderKey, setRerenderKey] = useState<number>(0);
     const [rerenderInput, setRerenderInput] = useState<number>(0);
@@ -110,6 +111,10 @@ const ViewProductPage: React.FC = () => {
         await updateProduct()
     };
 
+    const handleProduction = async () => {
+        setOpenChangeProductionModal(true)
+    };
+
     const updateProduct = async () => {
         try {
             setLoading(true);
@@ -153,6 +158,20 @@ const ViewProductPage: React.FC = () => {
         }
     };
 
+    const changeProduction = async () => {
+        try {
+            setLoading(true);
+            await axios.put(`/product/${productId}/production`);
+            console.log('Product is not on production.');
+            toast.success('Produk sudah tidak diedar.', { autoClose: 3000, onClose: () => { navigate('/daftar-produk') } })
+        } catch (error) {
+            console.error('Error updating product:', error);
+            toast.error('Produk gagal diperbarui.', { autoClose: 3000 })
+        } finally {
+            setLoading(false);
+        }
+    }
+
     const handleCloseConfirmationModal = () => {
         setOpenConfirmationModal(false);
     };
@@ -160,6 +179,15 @@ const ViewProductPage: React.FC = () => {
     const handleConfirmUpdate = () => {
         updateProduct();
         setOpenConfirmationModal(false);
+    };
+
+    const handleCloseChangeProductionModal = () => {
+        setOpenChangeProductionModal(false);
+    };
+
+    const handleChangeProductionUpdate = () => {
+        changeProduction();
+        setOpenChangeProductionModal(false);
     };
 
     return (
@@ -254,6 +282,14 @@ const ViewProductPage: React.FC = () => {
                     >
                         Perbarui Produk
                     </Button>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        onClick={handleProduction}
+                        sx={{ marginTop: 2, p: 2, display: 'block', width: '100%' }}
+                    >
+                        Hapus Produk
+                    </Button>
                 </div>
             </Box>
             <Dialog open={openConfirmationModal} onClose={handleCloseConfirmationModal}>
@@ -300,6 +336,22 @@ const ViewProductPage: React.FC = () => {
                     </Button>
                     <Button onClick={handleConfirmUpdate} color="primary">
                         Simpan
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={openChangeProductionModal} onClose={handleCloseChangeProductionModal}>
+                <DialogTitle>Perubahan Terdeteksi</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Apakah Anda yakin ingin menghapus produk? Perubahan yang disimpan tidak bisa dibatalkan!
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseChangeProductionModal} color="warning">
+                        Batal
+                    </Button>
+                    <Button onClick={handleChangeProductionUpdate} color="primary">
+                        Konfirmasi
                     </Button>
                 </DialogActions>
             </Dialog>

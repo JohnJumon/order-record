@@ -39,12 +39,14 @@ app.post('/api/product', requireAuth, productController.createProduct);
 app.get('/api/product', requireAuth, productController.fetchProducts);
 app.get('/api/product/:id', requireAuth, productController.fetchProduct);
 app.put('/api/product/:id', requireAuth, productController.updateProduct);
+app.put('/api/product/:id/production', requireAuth, productController.productionProduct);
 app.get('/api/product/check/:code', requireAuth, productController.checkProduct);
 
 app.post('/api/customer', requireAuth, customerController.createCustomer);
 app.get('/api/customer/:id', requireAuth, customerController.fetchCustomer);
 app.get('/api/customer', requireAuth, customerController.fetchCustomers);
 app.put('/api/customer/:id', requireAuth, customerController.updateCustomer);
+app.put('/api/customer/:id/blacklist', requireAuth, customerController.blacklistCustomer);
 app.get('/api/customer/check/:number', requireAuth, customerController.checkCustomer);
 
 app.post('/api/login', userController.login)
