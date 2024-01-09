@@ -25,12 +25,14 @@ interface Product {
     productName: string;
     productPrice: number;
     productImage: string;
+    production: boolean;
 }
 
 interface Customer {
     _id: string;
     phoneNumber: string;
     customerName: string;
+    blacklist: boolean;
 }
 
 interface SelectedProduct {
@@ -49,6 +51,7 @@ const CreateTransactionPage: React.FC = () => {
     const [quantity, setQuantity] = useState<number | ''>('');
     const [orderCreated, setOrderCreated] = useState<boolean>(true)
     const [rerenderKey, setRerenderKey] = useState<number>(0);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const imageBaseUrl = `https://storage.googleapis.com/${import.meta.env.VITE_BUCKET_NAME}/`
 
@@ -58,6 +61,7 @@ const CreateTransactionPage: React.FC = () => {
                 try {
                     const response = await axios.get('/customer');
                     setCustomers(response.data.customers);
+                    console.log(response.data.customers);
                 } catch (error) {
                     console.error('Error fetching customers:', error);
                 }
@@ -122,6 +126,7 @@ const CreateTransactionPage: React.FC = () => {
     const handleCreateTransaction = async () => {
         let toastText = '';
         try {
+            setLoading(true)
             let customerId = '';
             if (!customer && customerName && phoneNumber) {
                 const customerResponse = await axios.post('/customer', {
@@ -160,6 +165,8 @@ const CreateTransactionPage: React.FC = () => {
         } catch (error) {
             console.error('Error creating transaction:', error);
             toast.error(toastText + 'Transaksi gagal dibuat.', { autoClose: 3000 });
+        } finally {
+            setLoading(false)
         }
     };
 
@@ -170,7 +177,7 @@ const CreateTransactionPage: React.FC = () => {
             </Typography>
             <Box key={rerenderKey}>
                 <Autocomplete
-                    options={customers}
+                    options={customers.filter((customer) => customer.blacklist === false)}
                     getOptionLabel={(option) => (typeof option === 'string' ? option : option.customerName || '')}
                     renderOption={(props, option) => (
                         <li {...props}>
@@ -202,7 +209,7 @@ const CreateTransactionPage: React.FC = () => {
                     />
                 )}
                 <Autocomplete
-                    options={products}
+                    options={products.filter((product) => product.production)}
                     getOptionLabel={(option) => option.productCode}
                     renderOption={(props, option) => (
                         <li {...props}>
@@ -280,6 +287,7 @@ const CreateTransactionPage: React.FC = () => {
                 )}
                 {selectedProducts.length > 0 && (
                     <Button
+                        disabled={loading}
                         variant="contained"
                         color="primary"
                         onClick={handleCreateTransaction}

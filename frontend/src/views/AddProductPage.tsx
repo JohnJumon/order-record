@@ -16,6 +16,7 @@ const AddProductPage: React.FC = () => {
     const [image, setImage] = useState<File | null>(null);
     const [tempImage, setTempImage] = useState<string>('')
     const [rerenderKey, setRerenderKey] = useState<number>(0);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const handleProductCodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setProductCode(event.target.value);
@@ -51,6 +52,7 @@ const AddProductPage: React.FC = () => {
 
     const handleAddProduct = async () => {
         try {
+            setLoading(true)
             const formData = new FormData();
             formData.append('productCode', productCode.toUpperCase());
             formData.append('productName', productName);
@@ -73,6 +75,8 @@ const AddProductPage: React.FC = () => {
         } catch (error) {
             console.error('Error adding product:', error);
             toast.error('Produk gagal ditambahkan.', { autoClose: 3000 })
+        } finally {
+            setLoading(false)
         }
     };
 
@@ -151,7 +155,7 @@ const AddProductPage: React.FC = () => {
                         fullWidth
                         margin="normal"
                     />
-                    <Button variant="contained" color="primary" onClick={handleAddProduct} sx={{ marginLeft: 'auto', p: 2, marginTop: 2, display: 'block', width: '100%' }}>
+                    <Button disabled={loading} variant="contained" color="primary" onClick={handleAddProduct} sx={{ marginLeft: 'auto', p: 2, marginTop: 2, display: 'block', width: '100%' }}>
                         Tambah Produk
                     </Button>
                 </div>
