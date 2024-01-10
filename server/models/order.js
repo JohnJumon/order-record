@@ -7,36 +7,22 @@ const orderSchema = new mongoose.Schema({
         {
             product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
             quantity: { type: Number, required: true, default: 1 },
-            productPrice: { type: Number },
-            productName: { type: String },
-            productCode: { type: String },
-            productImage: { type: String }
+            status: { type: Number, default: 0},
+            size: {type: String, default: "-"},
+            color: {type: String, default: "-"},
+            description: {type: String, default: "-"},
         }
     ],
-    orderStatus: { type: Number, required: true, default: 0 }
+    statusCount: {
+        0: {type: Number, default: 0},
+        1: {type: Number, default: 0},
+        2: {type: Number, default: 0},
+        3: {type: Number, default: 0},
+        4: {type: Number, default: 0},
+    },
+    deposit: {type: Number, default: 0},
+    isPaidOff: {type: Boolean, default: false}
 })
-
-orderSchema.pre("save", async function (next) {
-    try {
-        if (!this.items[0].product.productPrice) {
-            await Promise.all(
-                this.items.map(
-                    async (item, index) => {
-                        const path = `items.${index}.product`;
-                        await this.populate({ path });
-                        item.productPrice = item.product.productPrice;
-                        item.productName = item.product.productName;
-                        item.productCode = item.product.productCode;
-                    }
-                )
-            )
-        };
-
-        next();
-    } catch (error) {
-        next(error);
-    }
-});
 
 const Order = mongoose.model("Order", orderSchema)
 

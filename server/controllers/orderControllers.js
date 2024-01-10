@@ -2,14 +2,19 @@ const Order = require('../models/order');
 
 const createOrder = async (req, res) => {
     try {
-        const { customer, items, orderStatus } = req.body;
+        const { customer, items, statusCount, deposit, isPaidOff } = req.body;
         const newOrder = await Order.create({
             customer,
             items: items.map(item => ({
                 product: item.product,
-                quantity: item.quantity
+                quantity: item.quantity,
+                size: item.size,
+                color: item.color,
+                description: item.description
             })),
-            orderStatus
+            statusCount,
+            deposit,
+            isPaidOff,
         });
 
         res.status(201).json({
@@ -26,7 +31,7 @@ const createOrder = async (req, res) => {
 
 const fetchOrders = async (req, res) => {
     try {
-        const { customerId, searchTerm, statusFilter, startDate, endDate } = req.query;
+        const { customerId, searchTerm, statusFilter, paymentFilter, startDate, endDate } = req.query;
 
         let query = {};
 
@@ -35,7 +40,11 @@ const fetchOrders = async (req, res) => {
         }
 
         if (statusFilter !== undefined && statusFilter !== '') {
-            query['orderStatus'] = statusFilter;
+            query['statusCount.' + statusFilter] = { $gt: 0 };
+        }
+
+        if (paymentFilter !== undefined && paymentFilter !== '') {
+            query['isPaidOff'] = paymentFilter == 1;
         }
 
         if (startDate && endDate) {
@@ -82,7 +91,7 @@ const fetchOrder = async (req, res) => {
 const updateOrder = async (req, res) => {
     try {
       const orderId = req.params.id;
-      const { customer, items, orderStatus } = req.body;
+      const { customer, items, deposit, isPaidOff, statusCount } = req.body;
   
       const populatedItems = await Order.populate(items, { path: 'product', model: 'Product' });
       const updatedOrder = await Order.findByIdAndUpdate(
@@ -92,11 +101,14 @@ const updateOrder = async (req, res) => {
           items: populatedItems.map(item => ({
             product: item.product,
             quantity: item.quantity,
-            productCode: item.product.productCode,
-            productName: item.product.productName,
-            productPrice: item.product.productPrice,
+            status: item.status,
+            size: item.size,
+            color: item.color,
+            description: item.description
           })),
-          orderStatus,
+          deposit,
+          isPaidOff,
+          statusCount,
         },
         { new: true }
       );

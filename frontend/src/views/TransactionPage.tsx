@@ -56,7 +56,8 @@ function Row(props: RowProps) {
                     {row.customer.customerName.toUpperCase()}
                 </TableCell>
                 <TableCell align="left">{formatDate(row.orderDate)}</TableCell>
-                <TableCell align="center">{getStatus(row.orderStatus)}</TableCell>
+                <TableCell align="right">{formatPriceAsRupiah(row.deposit)}</TableCell>
+                <TableCell align="center">{row.isPaidOff ? "LUNAS" : "BELUM LUNAS"}</TableCell>
                 <TableCell align="center">
                     <Tooltip title='Lihat Transaksi'>
                         <IconButton color="primary" onClick={() => (navigate('/transaksi/' + row._id))}>
@@ -66,7 +67,7 @@ function Row(props: RowProps) {
                 </TableCell>
             </TableRow>
             <TableRow>
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{ margin: 1 }}>
                             <Typography variant="h6" gutterBottom component="div">
@@ -78,8 +79,12 @@ function Row(props: RowProps) {
                                         <TableCell />
                                         <TableCell>Kode Produk</TableCell>
                                         <TableCell>Nama Produk</TableCell>
+                                        <TableCell align="center">Ukuran</TableCell>
+                                        <TableCell align="center">Warna</TableCell>
+                                        <TableCell align="center">Keterangan</TableCell>
                                         <TableCell align="right">Jumlah</TableCell>
                                         <TableCell align="right">Harga/Jumlah</TableCell>
+                                        <TableCell align="center">Status</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -94,12 +99,16 @@ function Row(props: RowProps) {
                                             </TableCell>
                                             <TableCell>{item.product.productCode}</TableCell>
                                             <TableCell>{item.product.productName}</TableCell>
+                                            <TableCell align="center">{item.size}</TableCell>
+                                            <TableCell align="center">{item.color}</TableCell>
+                                            <TableCell align="center">{item.description}</TableCell>
                                             <TableCell align="right">{item.quantity}</TableCell>
                                             <TableCell align="right">{formatPriceAsRupiah(item.product.productPrice)}</TableCell>
+                                            <TableCell align="center">{getStatus(item.status)}</TableCell>
                                         </TableRow>
                                     ))}
                                     <TableRow>
-                                        <TableCell colSpan={4} align="left" sx={{ fontWeight: 500 }}>Total Harga</TableCell>
+                                        <TableCell colSpan={7} align="left" sx={{ fontWeight: 500 }}>Total Harga</TableCell>
                                         <TableCell align="right" sx={{ fontWeight: 500 }}>
                                             {formatPriceAsRupiah(row.items.reduce((total, item) => total + (item.quantity * item.product.productPrice), 0))}
                                         </TableCell>
@@ -118,6 +127,7 @@ export default function TransactionPage() {
     const [orders, setOrders] = React.useState<OrderData[]>([]);
     const [searchTerm, setSearchTerm] = React.useState('');
     const [statusFilter, setStatusFilter] = React.useState<number | ''>('');
+    const [paymentFilter, setPaymentFilter] = React.useState<number | ''>('');
     const [startDate, setStartDate] = React.useState<string>('');
     const [endDate, setEndDate] = React.useState<string>('');
 
@@ -136,6 +146,7 @@ export default function TransactionPage() {
                 params: {
                     searchTerm,
                     statusFilter,
+                    paymentFilter,
                     startDate: startOfDay?.toISOString(),
                     endDate: endOfDay?.toISOString(),
                 },
@@ -144,7 +155,18 @@ export default function TransactionPage() {
                 (a: { orderDate: string }, b: { orderDate: string }) =>
                     new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
             );
-            setOrders(sortedTransactions);
+            if (statusFilter === '') {
+                setOrders(sortedTransactions)
+                console.log('test')
+            } 
+            else {
+                const filteredOrders = sortedTransactions.map((order: OrderData) => {
+                    const filteredItems = order.items.filter((item: OrderItem) => item.status === statusFilter);
+                    return { ...order, items: filteredItems };
+                });
+                setOrders(filteredOrders);
+            }
+
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -152,7 +174,7 @@ export default function TransactionPage() {
 
     React.useEffect(() => {
         fetchData();
-    }, [searchTerm, statusFilter, startDate, endDate]);
+    }, [searchTerm, statusFilter, paymentFilter, startDate, endDate]);
 
     const header = (
         <TableHead>
@@ -161,7 +183,8 @@ export default function TransactionPage() {
                 <TableCell>No. </TableCell>
                 <TableCell>Nama Pemesan</TableCell>
                 <TableCell align="left">Tanggal Pemesanan</TableCell>
-                <TableCell align="center">Status Pemesanan</TableCell>
+                <TableCell align="right">Deposit</TableCell>
+                <TableCell align="center">Status Pembayaran</TableCell>
                 <TableCell />
             </TableRow>
         </TableHead>
@@ -208,12 +231,23 @@ export default function TransactionPage() {
                     displayEmpty
                     inputProps={{ 'aria-label': 'Without label' }}
                 >
-                    <MenuItem value={''}>Semua</MenuItem>
+                    <MenuItem value={''}>Status Barang</MenuItem>
                     <MenuItem value={0}>Order</MenuItem>
                     <MenuItem value={1}>Pick Up</MenuItem>
                     <MenuItem value={2}>Dikirim</MenuItem>
                     <MenuItem value={3}>Selesai</MenuItem>
                     <MenuItem value={4}>Sold Out</MenuItem>
+                </Select>
+                <Select
+                    value={paymentFilter}
+                    onChange={(e) => setPaymentFilter(e.target.value as number | '')}
+                    displayEmpty
+                    inputProps={{ 'aria-label': 'Without label' }}
+                    sx={{ ml: 2 }}
+                >
+                    <MenuItem value={''}>Status Pembayaran</MenuItem>
+                    <MenuItem value={0}>Belum Lunas</MenuItem>
+                    <MenuItem value={1}>Lunas</MenuItem>
                 </Select>
             </Stack>
 
@@ -239,6 +273,10 @@ interface Product {
 interface OrderItem {
     quantity: number;
     product: Product;
+    color: string;
+    size: string;
+    description: string;
+    status: number
 }
 
 interface OrderData {
@@ -249,7 +287,11 @@ interface OrderData {
     };
     orderDate: string;
     items: OrderItem[];
-    orderStatus: number;
+    statusCount: {
+        [key: number]: number
+    };
+    deposit: number;
+    isPaidOff: boolean;
 }
 
 interface RowProps {

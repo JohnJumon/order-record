@@ -23,6 +23,8 @@ function Row(props: RowProps) {
                     {row.productCode.toUpperCase()}
                 </TableCell>
                 <TableCell align="left">{row.productName.toUpperCase()}</TableCell>
+                <TableCell align="left">{row.productLocation.toUpperCase()}</TableCell>
+                <TableCell align="right">{formatPriceAsRupiah(row.productCapital)}</TableCell>
                 <TableCell align="right">{formatPriceAsRupiah(row.productPrice)}</TableCell>
                 <TableCell align="center">
                     <Tooltip title='Lihat Produk'>
@@ -65,6 +67,8 @@ export default function ProductPage() {
                 <TableCell>No. </TableCell>
                 <TableCell>Kode Produk</TableCell>
                 <TableCell align="left">Nama Produk</TableCell>
+                <TableCell align="left">Lokasi Pengambilan</TableCell>
+                <TableCell align="right">Modal Produk</TableCell>
                 <TableCell align="right">Harga Produk</TableCell>
                 <TableCell />
             </TableRow>
@@ -101,6 +105,8 @@ interface ProductData {
     productPrice: number;
     productCode: string;
     production: boolean;
+    productCapital: number;
+    productLocation: string;
 }
 
 interface RowProps {

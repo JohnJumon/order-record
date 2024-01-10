@@ -69,8 +69,8 @@ const updateCustomer = async (req, res) => {
         const updatedCustomer = await Customer.findByIdAndUpdate(
             customerId,
             {
-                phoneNumber,
-                customerName,
+                phoneNumber: phoneNumber,
+                customerName: customerName,
             },
             { new: true }
         );

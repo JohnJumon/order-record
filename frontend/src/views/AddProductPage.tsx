@@ -13,6 +13,8 @@ const AddProductPage: React.FC = () => {
     const [productCode, setProductCode] = useState<string>('');
     const [productName, setProductName] = useState<string>('');
     const [productPrice, setProductPrice] = useState<number | ''>('');
+    const [productLocation, setProductLocation] = useState<string>('');
+    const [productCapital, setProductCapital] = useState<number | ''>('');
     const [image, setImage] = useState<File | null>(null);
     const [tempImage, setTempImage] = useState<string>('')
     const [rerenderKey, setRerenderKey] = useState<number>(0);
@@ -30,6 +32,16 @@ const AddProductPage: React.FC = () => {
         const newValue: number | '' = event.target.value === '' ? '' : parseFloat(event.target.value);
         setProductPrice(newValue);
     };
+
+    const handleProductLocationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setProductLocation(event.target.value);
+    };
+
+    const handleProductCapitalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue: number | '' = event.target.value === '' ? '' : parseFloat(event.target.value);
+        setProductCapital(newValue);
+    };
+
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files && event.target.files[0]
@@ -57,6 +69,8 @@ const AddProductPage: React.FC = () => {
             formData.append('productCode', productCode.toUpperCase());
             formData.append('productName', productName);
             formData.append('productPrice', String(productPrice));
+            formData.append('productCapital', String(productCapital));
+            formData.append('productLocation', productLocation);
             if (image) {
                 formData.append('image', image);
             }
@@ -70,6 +84,8 @@ const AddProductPage: React.FC = () => {
             setProductCode('')
             setProductName('')
             setProductPrice('')
+            setProductCapital('')
+            setProductLocation('')
             setImage(null)
             setTempImage('')
         } catch (error) {
@@ -152,6 +168,21 @@ const AddProductPage: React.FC = () => {
                         type="number"
                         value={productPrice}
                         onChange={handleProductPriceChange}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        label="Lokasi Pengambilan Produk"
+                        value={productLocation}
+                        onChange={handleProductLocationChange}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        label="Modal Produk"
+                        type="number"
+                        value={productCapital}
+                        onChange={handleProductCapitalChange}
                         fullWidth
                         margin="normal"
                     />

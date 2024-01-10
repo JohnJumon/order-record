@@ -10,7 +10,7 @@ const bucketName = process.env.BUCKET_NAME;
 
 const createProduct = async (req, res) => {
     try {
-        const { productCode, productName, productPrice } = req.body;
+        const { productCode, productName, productPrice, productCapital, productLocation } = req.body;
         const imageBuffer = req.file.buffer;
         const imageName = `images/${Date.now()}_${req.file.originalname}`;
         const file = storage.bucket(bucketName).file(imageName);
@@ -25,6 +25,8 @@ const createProduct = async (req, res) => {
             productName,
             productPrice,
             productImage: imageName,
+            productLocation,
+            productCapital
         });
 
         res.status(201).json({
@@ -84,7 +86,7 @@ const checkProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
     try {
         const productId = req.params.id;
-        const { productCode, productName, productPrice, productImage } = req.body;
+        const { productCode, productName, productPrice, productImage, productCapital, productLocation } = req.body;
 
         if (req.file) {
             const newImageBuffer = req.file.buffer;
@@ -101,6 +103,8 @@ const updateProduct = async (req, res) => {
                     productCode,
                     productName,
                     productPrice,
+                    productCapital,
+                    productLocation
                 },
                 { new: true }
             );
@@ -117,6 +121,8 @@ const updateProduct = async (req, res) => {
                 productCode,
                 productName,
                 productPrice,
+                productCapital,
+                productLocation
             },
             { new: true }
         );

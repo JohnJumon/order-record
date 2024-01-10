@@ -18,10 +18,9 @@ import Tooltip from '@mui/material/Tooltip';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useParams, useNavigate } from 'react-router-dom';
-import Select from '@mui/material/Select';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import Grid from '@mui/material/Grid';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -31,7 +30,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import _ from 'lodash';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { formatPriceAsRupiah, getStatus, formatDate } from './utility/utility';
+import {getStatus, formatPriceAsRupiah, formatDate } from './utility/utility';
 import { LightTooltip } from './TransactionPage';
 import PreviewIcon from '@mui/icons-material/Preview';
 
@@ -47,19 +46,28 @@ interface Customer {
     _id: string;
     phoneNumber: string;
     customerName: string;
+    blacklist: boolean;
 }
 
 interface SelectedProduct {
     product: Product;
     quantity: number;
+    size: string;
+    color: string;
+    description: string;
+    status: number;
 }
 
 interface Order {
     _id: string;
     customer: Customer;
     items: SelectedProduct[];
-    orderStatus: number;
     orderDate: string;
+    statusCount: {
+        [key: number]: number
+    };
+    deposit: number;
+    isPaidOff: boolean;
 }
 
 const ViewTransactionPage: React.FC = () => {
@@ -67,13 +75,13 @@ const ViewTransactionPage: React.FC = () => {
     const navigate = useNavigate();
 
     const [originalData, setOriginalData] = useState({
-        orderStatus: 0,
-        phoneNumber: '',
+        customerName: '',
         selectedProducts: [] as SelectedProduct[],
+        deposit: 0 as number,
+        isPaidOff: false as boolean
     });
 
     const [order, setOrder] = useState<Order | null>(null);
-    const [orderStatus, setOrderStatus] = useState<number>(0);
     const [phoneNumber, setPhoneNumber] = useState('');
     const [customer, setCustomer] = useState<Customer | null>(null);
     const [customers, setCustomers] = useState<Customer[]>([]);
@@ -82,6 +90,11 @@ const ViewTransactionPage: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [quantity, setQuantity] = useState<number | ''>('');
+    const [paidOff, setPaidOff] = useState<number>(0);
+    const [deposit, setDeposit] = useState<number>(0)
+    const [color, setColor] = useState('');
+    const [size, setSize] = useState('');
+    const [description, setDescription] = useState('');
 
     const [loading, setLoading] = useState<boolean>(false);
     const [changesDetected, setChangesDetected] = useState<boolean>(false);
@@ -94,24 +107,34 @@ const ViewTransactionPage: React.FC = () => {
             try {
                 const response = await axios.get(`/order/${orderId}`);
                 const fetchedOrder = response.data.order;
-                setOrderStatus(fetchedOrder.orderStatus)
                 setOrder(fetchedOrder);
                 setPhoneNumber(fetchedOrder.customer.phoneNumber);
                 setCustomer(fetchedOrder.customer);
                 setCustomerName(fetchedOrder.customer.customerName);
+                setDeposit(fetchedOrder.deposit)
+                setPaidOff(fetchedOrder.isPaidOff)
                 setSelectedProducts(
                     fetchedOrder.items.map((item: SelectedProduct) => ({
                         product: item.product,
                         quantity: item.quantity,
+                        size: item.size,
+                        color: item.color,
+                        description: item.description,
+                        status: item.status
                     }))
                 );
                 setOriginalData({
-                    orderStatus: fetchedOrder.orderStatus,
-                    phoneNumber: fetchedOrder.customer.phoneNumber,
+                    customerName: fetchedOrder.customer.customerName,
                     selectedProducts: fetchedOrder.items.map((item: SelectedProduct) => ({
                         product: item.product,
                         quantity: item.quantity,
-                    }))
+                        size: item.size,
+                        color: item.color,
+                        description: item.description,
+                        status: item.status
+                    })),
+                    deposit: fetchedOrder.deposit,
+                    isPaidOff: fetchedOrder.isPaidOff,
                 });
             } catch (error) {
                 console.error('Error fetching order:', error);
@@ -147,14 +170,20 @@ const ViewTransactionPage: React.FC = () => {
         setQuantity(newValue);
     };
 
+    const handleDepositChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue: number = event.target.value === '' ? 0 : parseInt(event.target.value, 10);
+        setDeposit(newValue);
+        setChangesDetected(true);
+    };
+
     const handlePhoneNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setPhoneNumber(event.target.value);
-        setCustomer(null);
-        setChangesDetected(true)
     };
 
     const handleCustomerNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setCustomerName(event.target.value);
+        setCustomer(null);
+        setChangesDetected(true)
     };
 
     const handleAddProduct = () => {
@@ -167,6 +196,10 @@ const ViewTransactionPage: React.FC = () => {
                 const newSelectedProduct: SelectedProduct = {
                     product: selectedProduct,
                     quantity: quantity as number,
+                    color: color,
+                    size: size,
+                    description: description,
+                    status: 0
                 };
 
                 setSelectedProducts([...selectedProducts, newSelectedProduct]);
@@ -212,25 +245,38 @@ const ViewTransactionPage: React.FC = () => {
                 customerId = customer._id;
             }
 
+            const newStatusCount = selectedProducts.reduce((acc, selectedProduct) => {
+                acc[selectedProduct.status] = (acc[selectedProduct.status] || 0) + 1;
+                return acc;
+            }, { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 } as { [key: number]: number }) ;
+
             const response = await axios.put(`/order/${orderId}`, {
                 customer: customerId,
                 items: selectedProducts.map((selectedProduct) => ({
                     product: selectedProduct.product._id,
-                    quantity: selectedProduct.quantity
+                    quantity: selectedProduct.quantity,
+                    status: selectedProduct.status,
+                    size: selectedProduct.size,
+                    color: selectedProduct.color,
+                    description: selectedProduct.description,
                 })),
-                orderStatus: orderStatus
+                deposit: deposit,
+                isPaidOff: paidOff == 1,
+                statusCount: newStatusCount,
             });
 
             console.log('Transaction updated successfully:', response.data);
             toast.success(toastText + 'Transaksi berhasil diperbarui.', { autoClose: 3000 });
-            setOrderStatus(orderStatus)
             setPhoneNumber(phoneNumber);
             setCustomerName(customerName);
             setSelectedProducts(selectedProducts);
+            setDeposit(deposit)
+            setPaidOff(paidOff)
             setOriginalData({
-                orderStatus: orderStatus,
-                phoneNumber: phoneNumber,
-                selectedProducts: selectedProducts
+                customerName: customerName,
+                selectedProducts: selectedProducts,
+                deposit: deposit,
+                isPaidOff: paidOff === 1,
             })
             setChangesDetected(false)
         } catch (error) {
@@ -250,6 +296,26 @@ const ViewTransactionPage: React.FC = () => {
         setOpenConfirmationModal(false);
     };
 
+    const handleStatusChange = (event: SelectChangeEvent<number>, index: number) => {
+        const updatedProducts = [...selectedProducts];
+        updatedProducts[index].status = event.target.value as number;
+        setSelectedProducts(updatedProducts);
+        setChangesDetected(true);
+        console.log(updatedProducts)
+    };
+
+    const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSize(event.target.value);
+    };
+
+    const handleColorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setColor(event.target.value);
+    };
+
+    const handleDescriptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setDescription(event.target.value);
+    };
+
     return (
         <>
             <Typography variant="h6" noWrap component="div" style={{ display: 'flex', alignItems: 'center' }}>
@@ -260,73 +326,70 @@ const ViewTransactionPage: React.FC = () => {
                 </Tooltip>
                 Lihat dan Perbarui Transaksi
             </Typography>
-            <Grid container spacing={2} sx={{ display: 'flex', alignItems: 'center' }}>
-                <Grid item xs={6}>
-                    <Typography noWrap component="div">
-                        <span style={{ fontWeight: 500 }}>{"Tanggal Transaksi : "}</span>{order !== null ? formatDate(order.orderDate) : ''}
-                    </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                    <Stack direction={'row'} justifyContent={'flex-end'}>
-                        <Select
-                            value={orderStatus}
-                            onChange={(e) => {
-                                setOrderStatus(e.target.value as number)
-                                setChangesDetected(true)
-                            }}
-                            inputProps={{
-                                name: 'order-status',
-                                id: 'order-status',
-                            }}
-                        >
-                            <MenuItem value={0}>Order</MenuItem>
-                            <MenuItem value={1}>Pick Up</MenuItem>
-                            <MenuItem value={2}>Dikirim</MenuItem>
-                            <MenuItem value={3}>Selesai</MenuItem>
-                            <MenuItem value={4}>Sold Out</MenuItem>
-                        </Select>
-                    </Stack>
-                </Grid>
-            </Grid>
+            <Typography noWrap component="div" sx={{ my: 2 }}>
+                <span style={{ fontWeight: 500 }}>{"Tanggal Transaksi : "}</span>{order !== null ? formatDate(order.orderDate) : ''}
+            </Typography>
             <Box>
                 <Autocomplete
-                    options={customers}
-                    getOptionLabel={(option) => (typeof option === 'string' ? option : option.phoneNumber || '')}
+                    options={customers.filter((customer) => customer.blacklist === false)}
+                    getOptionLabel={(option) => (typeof option === 'string' ? option : option.customerName || '')}
                     renderOption={(props, option) => (
                         <li {...props}>
-                            <div>{option.phoneNumber}</div>
-                            <div style={{ marginLeft: '8px' }}>{option.customerName}</div>
+                            <div>{option.customerName}</div>
+                            <div style={{ marginLeft: '8px' }}>{option.phoneNumber}</div>
                         </li>
                     )}
                     renderInput={(params) => (
-                        <TextField {...params} label="Nomor Telepon" onChange={handlePhoneNumberChange} margin='normal' value={phoneNumber} />
+                        <TextField {...params} label="Nomor Telepon" onChange={handleCustomerNameChange} margin='normal' value={customerName} />
                     )}
                     onChange={(_, newValue) => {
                         if (newValue && typeof newValue !== 'string') {
-                            setPhoneNumber(newValue.phoneNumber || '');
+                            setCustomerName(newValue.customerName || '');
                             setCustomer(newValue);
                         }
                     }}
                     freeSolo
-                    value={customers.find(cust => cust.phoneNumber === phoneNumber) || null}
+                    value={customers.find(cust => cust.customerName === customerName) || null}
                 />
                 {customer ? (
                     <TextField
-                        label="Nama Konsumen"
-                        value={customer.customerName}
+                        label="Nomor Telepon"
+                        value={customer.phoneNumber}
                         fullWidth
                         margin="normal"
                         disabled
                     />
                 ) : (
                     <TextField
-                        label="Nama Konsumen"
-                        value={customerName}
-                        onChange={handleCustomerNameChange}
+                        label="Nomor Telepon"
+                        value={phoneNumber}
+                        onChange={handlePhoneNumberChange}
                         fullWidth
                         margin="normal"
                     />
                 )}
+                <TextField
+                    label="Deposit"
+                    value={deposit}
+                    onChange={handleDepositChange}
+                    fullWidth
+                    margin="normal"
+                />
+                <Stack direction={'row'} justifyContent={'flex-end'}>
+                    <Select
+                        value={paidOff ? 1 : 0}
+                        onChange={(e) => {
+                                setPaidOff(e.target.value as number)
+                                setChangesDetected(true)
+                            }
+                        }
+                        displayEmpty
+                        inputProps={{ 'aria-label': 'Without label' }}
+                    >
+                        <MenuItem value={0}>Belum Lunas</MenuItem>
+                        <MenuItem value={1}>Lunas</MenuItem>
+                    </Select>
+                </Stack>
                 <Autocomplete
                     options={products}
                     getOptionLabel={(option) => option.productCode}
@@ -346,6 +409,27 @@ const ViewTransactionPage: React.FC = () => {
                             type="number"
                             value={quantity === '' ? '' : quantity.toString()}
                             onChange={handleQuantityChange}
+                            fullWidth
+                            margin="normal"
+                        />
+                        <TextField
+                            label="Ukuran"
+                            value={size}
+                            onChange={handleSizeChange}
+                            fullWidth
+                            margin="normal"
+                        />
+                        <TextField
+                            label="Warna"
+                            value={color}
+                            onChange={handleColorChange}
+                            fullWidth
+                            margin="normal"
+                        />
+                        <TextField
+                            label="Keterangan"
+                            value={description}
+                            onChange={handleDescriptionChange}
                             fullWidth
                             margin="normal"
                         />
@@ -371,8 +455,12 @@ const ViewTransactionPage: React.FC = () => {
                                         <TableCell />
                                         <TableCell>Kode Produk</TableCell>
                                         <TableCell>Nama Produk</TableCell>
+                                        <TableCell>Ukuran</TableCell>
+                                        <TableCell>Warna</TableCell>
+                                        <TableCell>Keterangan</TableCell>
                                         <TableCell align='right'>Jumlah</TableCell>
                                         <TableCell align='right'>Harga/Jumlah</TableCell>
+                                        <TableCell align='center'>Status</TableCell>
                                         <TableCell align='center'>Aksi</TableCell>
                                     </TableRow>
                                 </TableHead>
@@ -387,20 +475,37 @@ const ViewTransactionPage: React.FC = () => {
                                                 </LightTooltip>
                                             </TableCell>
                                             <TableCell>{selectedProduct.product.productCode}</TableCell>
-                                                <TableCell>{selectedProduct.product.productName}</TableCell>
-                                                <TableCell align="right">{selectedProduct.quantity}</TableCell>
-                                                <TableCell align='right'>{formatPriceAsRupiah(selectedProduct.product.productPrice)}</TableCell>
-                                                <TableCell align='center'>
-                                                    <Tooltip title='Hapus'>
-                                                        <IconButton color="error" onClick={() => handleDeleteProduct(index)}>
-                                                            <DeleteIcon />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                </TableCell>
+                                            <TableCell>{selectedProduct.product.productName}</TableCell>
+                                            <TableCell>{selectedProduct.size}</TableCell>
+                                            <TableCell>{selectedProduct.color}</TableCell>
+                                            <TableCell>{selectedProduct.description}</TableCell>
+                                            <TableCell align="right">{selectedProduct.quantity}</TableCell>
+                                            <TableCell align='right'>{formatPriceAsRupiah(selectedProduct.product.productPrice)}</TableCell>
+                                            <TableCell align='center'>
+                                                <Select
+                                                    value={selectedProduct.status}
+                                                    onChange={(e) => handleStatusChange(e, index)}
+                                                    displayEmpty
+                                                    inputProps={{ 'aria-label': 'Without label' }}
+                                                >
+                                                    <MenuItem value={0}>Order</MenuItem>
+                                                    <MenuItem value={1}>Pick Up</MenuItem>
+                                                    <MenuItem value={2}>Dikirim</MenuItem>
+                                                    <MenuItem value={3}>Selesai</MenuItem>
+                                                    <MenuItem value={4}>Sold Out</MenuItem>
+                                                </Select>
+                                            </TableCell>
+                                            <TableCell align='center'>
+                                                <Tooltip title='Hapus'>
+                                                    <IconButton color="error" onClick={() => handleDeleteProduct(index)}>
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            </TableCell>
                                         </TableRow>
                                     ))}
                                     <TableRow>
-                                        <TableCell colSpan={4} align='left' sx={{ fontWeight: 500 }}>Total Harga</TableCell>
+                                        <TableCell colSpan={8} align='left' sx={{ fontWeight: 500 }}>Total Harga</TableCell>
                                         <TableCell align='right' sx={{ fontWeight: 500 }}>
                                             {formatPriceAsRupiah(selectedProducts.reduce(
                                                 (total, item) => total + item.product.productPrice * item.quantity, 0
@@ -420,8 +525,9 @@ const ViewTransactionPage: React.FC = () => {
                         sx={{ marginLeft: 'auto', p: 2, marginTop: 2, display: 'block', width: '100%' }}
                         disabled={loading ||
                             (
-                                (originalData.phoneNumber === phoneNumber) &&
-                                (originalData.orderStatus === orderStatus) &&
+                                (originalData.customerName === customerName) &&
+                                (originalData.deposit === deposit) &&
+                                (originalData.isPaidOff === (paidOff == 1)) &&
                                 (_.isEqual(originalData.selectedProducts, selectedProducts))
                             )
                         }
@@ -436,23 +542,35 @@ const ViewTransactionPage: React.FC = () => {
                     <DialogContentText>
                         Apakah Anda yakin ingin menyimpan perubahan?
                     </DialogContentText>
-                    {originalData.orderStatus !== orderStatus && (
+                    {originalData.customerName !== customerName && (
                         <>
                             <Typography sx={{ fontWeight: 500 }}>
-                                Status Pengiriman
+                                Pelanggan
                             </Typography>
                             <DialogContentText style={{ display: 'flex', alignItems: 'center' }}>
-                                {getStatus(originalData.orderStatus)} <ChevronRightIcon /> {getStatus(orderStatus)}
+                                {originalData.customerName} <ChevronRightIcon /> {customerName}
                             </DialogContentText>
                         </>
+
                     )}
-                    {originalData.phoneNumber !== phoneNumber && (
+                    {originalData.isPaidOff !== (paidOff == 1) && (
                         <>
                             <Typography sx={{ fontWeight: 500 }}>
-                                Nomor Telepon
+                                Status Pembayaran
                             </Typography>
                             <DialogContentText style={{ display: 'flex', alignItems: 'center' }}>
-                                {originalData.phoneNumber} <ChevronRightIcon /> {phoneNumber}
+                                {originalData.isPaidOff ? "LUNAS" : "BELUM LUNAS"} <ChevronRightIcon /> {paidOff == 1 ? "LUNAS" : "BELUM LUNAS"}
+                            </DialogContentText>
+                        </>
+
+                    )}
+                    {originalData.deposit !== deposit && (
+                        <>
+                            <Typography sx={{ fontWeight: 500 }}>
+                                Deposit
+                            </Typography>
+                            <DialogContentText style={{ display: 'flex', alignItems: 'center' }}>
+                                {formatPriceAsRupiah(originalData.deposit)} <ChevronRightIcon /> {formatPriceAsRupiah(deposit)}
                             </DialogContentText>
                         </>
 
@@ -469,6 +587,7 @@ const ViewTransactionPage: React.FC = () => {
                                             <TableRow>
                                                 <TableCell align='left'>Kode Produk</TableCell>
                                                 <TableCell align='right'>Jumlah</TableCell>
+                                                <TableCell align='center'>Status</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
@@ -476,6 +595,7 @@ const ViewTransactionPage: React.FC = () => {
                                                 <TableRow key={index}>
                                                     <TableCell>{originalProduct.product.productCode}</TableCell>
                                                     <TableCell align='right'>{originalProduct.quantity}</TableCell>
+                                                    <TableCell align='center'>{getStatus(originalProduct.status)}</TableCell>
                                                 </TableRow>
                                             ))}
                                         </TableBody>
@@ -488,6 +608,7 @@ const ViewTransactionPage: React.FC = () => {
                                             <TableRow>
                                                 <TableCell align='left'>Kode Produk</TableCell>
                                                 <TableCell align='right'>Jumlah</TableCell>
+                                                <TableCell align='right'>Status</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
@@ -495,6 +616,7 @@ const ViewTransactionPage: React.FC = () => {
                                                 <TableRow key={index}>
                                                     <TableCell>{selectedProduct.product.productCode}</TableCell>
                                                     <TableCell align='right'>{selectedProduct.quantity}</TableCell>
+                                                    <TableCell align='center'>{getStatus(selectedProduct.status)}</TableCell>
                                                 </TableRow>
                                             ))}
                                         </TableBody>

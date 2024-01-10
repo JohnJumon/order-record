@@ -18,6 +18,9 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { LightTooltip } from './TransactionPage';
 import PreviewIcon from '@mui/icons-material/Preview';
+import MenuItem from '@mui/material/MenuItem';
+import Stack from '@mui/material/Stack';
+import Select from '@mui/material/Select';
 
 interface Product {
     _id: string;
@@ -38,6 +41,9 @@ interface Customer {
 interface SelectedProduct {
     product: Product;
     quantity: number;
+    size: string;
+    color: string;
+    description: string;
 }
 
 const CreateTransactionPage: React.FC = () => {
@@ -52,6 +58,11 @@ const CreateTransactionPage: React.FC = () => {
     const [orderCreated, setOrderCreated] = useState<boolean>(true)
     const [rerenderKey, setRerenderKey] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(false);
+    const [paidOff, setPaidOff] = useState<number>(0);
+    const [deposit, setDeposit] = useState<number | ''>('')
+    const [color, setColor] = useState('');
+    const [size, setSize] = useState('');
+    const [description, setDescription] = useState('');
 
     const imageBaseUrl = `https://storage.googleapis.com/${import.meta.env.VITE_BUCKET_NAME}/`
 
@@ -87,6 +98,11 @@ const CreateTransactionPage: React.FC = () => {
         setQuantity(newValue);
     };
 
+    const handleDepositChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue: number | '' = event.target.value === '' ? '' : parseInt(event.target.value, 10);
+        setDeposit(newValue);
+    };
+
     const handlePhoneNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setPhoneNumber(event.target.value);
     };
@@ -95,6 +111,19 @@ const CreateTransactionPage: React.FC = () => {
         setCustomerName(event.target.value);
         setCustomer(null);
     };
+
+    const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSize(event.target.value);
+    };
+
+    const handleColorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setColor(event.target.value);
+    };
+
+    const handleDescriptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setDescription(event.target.value);
+    };
+
 
     const handleAddProduct = () => {
         if (selectedProduct && quantity !== '' && quantity > 0) {
@@ -106,6 +135,9 @@ const CreateTransactionPage: React.FC = () => {
                 const newSelectedProduct: SelectedProduct = {
                     product: selectedProduct,
                     quantity: quantity as number,
+                    size: size,
+                    color: color,
+                    description: description,
                 };
 
                 setSelectedProducts([...selectedProducts, newSelectedProduct]);
@@ -146,10 +178,13 @@ const CreateTransactionPage: React.FC = () => {
                 items: selectedProducts.map((selectedProduct) => ({
                     product: selectedProduct.product._id,
                     quantity: selectedProduct.quantity,
-                    productPrice: selectedProduct.product.productPrice,
-                    productName: selectedProduct.product.productName,
-                    productCode: selectedProduct.product.productCode,
+                    size: selectedProduct.size,
+                    color: selectedProduct.color,
+                    description: selectedProduct.description,
                 })),
+                statusCount: {0: selectedProducts.length},
+                deposit: deposit,
+                isPaidOff: paidOff === 0 ? false : true
             });
 
             console.log('Transaction created successfully:', response.data);
@@ -161,7 +196,12 @@ const CreateTransactionPage: React.FC = () => {
             setCustomerName('');
             setSelectedProducts([]);
             setSelectedProduct(null);
+            setPaidOff(0)
             setQuantity('');
+            setDeposit('');
+            setColor('');
+            setSize('');
+            setDescription('');
         } catch (error) {
             console.error('Error creating transaction:', error);
             toast.error(toastText + 'Transaksi gagal dibuat.', { autoClose: 3000 });
@@ -208,6 +248,24 @@ const CreateTransactionPage: React.FC = () => {
                         margin="normal"
                     />
                 )}
+                <TextField
+                    label="Deposit"
+                    value={deposit}
+                    onChange={handleDepositChange}
+                    fullWidth
+                    margin="normal"
+                />
+                <Stack direction={'row'} justifyContent={'flex-end'}>
+                    <Select
+                        value={paidOff}
+                        onChange={(e) => setPaidOff(e.target.value as number)}
+                        displayEmpty
+                        inputProps={{ 'aria-label': 'Without label' }}
+                    >
+                        <MenuItem value={0}>Belum Lunas</MenuItem>
+                        <MenuItem value={1}>Lunas</MenuItem>
+                    </Select>
+                </Stack>
                 <Autocomplete
                     options={products.filter((product) => product.production)}
                     getOptionLabel={(option) => option.productCode}
@@ -227,6 +285,27 @@ const CreateTransactionPage: React.FC = () => {
                             type="number"
                             value={quantity === '' ? '' : quantity.toString()}
                             onChange={handleQuantityChange}
+                            fullWidth
+                            margin="normal"
+                        />
+                        <TextField
+                            label="Ukuran"
+                            value={size}
+                            onChange={handleSizeChange}
+                            fullWidth
+                            margin="normal"
+                        />
+                        <TextField
+                            label="Warna"
+                            value={color}
+                            onChange={handleColorChange}
+                            fullWidth
+                            margin="normal"
+                        />
+                        <TextField
+                            label="Keterangan"
+                            value={description}
+                            onChange={handleDescriptionChange}
                             fullWidth
                             margin="normal"
                         />
@@ -252,6 +331,9 @@ const CreateTransactionPage: React.FC = () => {
                                         <TableCell />
                                         <TableCell>Kode Produk</TableCell>
                                         <TableCell>Nama Produk</TableCell>
+                                        <TableCell>Ukuran</TableCell>
+                                        <TableCell>Warna</TableCell>
+                                        <TableCell>Keterangan</TableCell>
                                         <TableCell align='right'>Jumlah</TableCell>
                                         <TableCell align='right'>Harga/Jumlah</TableCell>
                                         <TableCell align='center'>Aksi</TableCell>
@@ -269,6 +351,9 @@ const CreateTransactionPage: React.FC = () => {
                                             </TableCell>
                                             <TableCell>{selectedProduct.product.productCode}</TableCell>
                                             <TableCell>{selectedProduct.product.productName}</TableCell>
+                                            <TableCell>{selectedProduct.size}</TableCell>
+                                            <TableCell>{selectedProduct.color}</TableCell>
+                                            <TableCell>{selectedProduct.description}</TableCell>
                                             <TableCell align="right">{selectedProduct.quantity}</TableCell>
                                             <TableCell align='right'>{selectedProduct.product.productPrice}</TableCell>
                                             <TableCell align='center'>

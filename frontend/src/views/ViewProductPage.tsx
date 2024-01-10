@@ -22,10 +22,12 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 const ViewProductPage: React.FC = () => {
     const { productId } = useParams()
 
-    const [originalData, setOriginalData] = useState({ productCode: '', productName: '', productPrice: 0, productImage: '' });
+    const [originalData, setOriginalData] = useState({ productCode: '', productName: '', productPrice: 0, productCapital: 0, productLocation: '', productImage: '' });
     const [productCode, setProductCode] = useState<string>('');
     const [productName, setProductName] = useState<string>('');
     const [productPrice, setProductPrice] = useState<number>(0);
+    const [productLocation, setProductLocation] = useState<string>('');
+    const [productCapital, setProductCapital] = useState<number>(0);
     const [productImage, setProductImage] = useState<string>('');
     const [image, setNewImage] = useState<File | null>(null);
     const [tempImage, setTempImage] = useState<string>('');
@@ -51,11 +53,15 @@ const ViewProductPage: React.FC = () => {
                 setProductName(response.data.product.productName);
                 setProductPrice(response.data.product.productPrice)
                 setProductImage(response.data.product.productImage);
+                setProductCapital(response.data.product.productCapital)
+                setProductLocation(response.data.product.productLocation);
                 setOriginalData({
                     productCode: response.data.product.productCode,
                     productName: response.data.product.productName,
                     productPrice: response.data.product.productPrice,
                     productImage: response.data.product.productImage,
+                    productCapital: response.data.product.productCapital,
+                    productLocation: response.data.product.productLocation,
                 })
             } catch (error) {
                 console.error('Error fetching products:', error);
@@ -78,6 +84,17 @@ const ViewProductPage: React.FC = () => {
     const handleProductPriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newValue: number = event.target.value === '' ? 0 : parseFloat(event.target.value);
         setProductPrice(newValue);
+        setChangesDetected(true)
+    };
+
+    const handleProductLocationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setProductLocation(event.target.value);
+        setChangesDetected(true)
+    };
+
+    const handleProductCapitalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue: number = event.target.value === '' ? 0 : parseFloat(event.target.value);
+        setProductCapital(newValue);
         setChangesDetected(true)
     };
 
@@ -121,6 +138,8 @@ const ViewProductPage: React.FC = () => {
             const formData = new FormData()
             formData.append('productCode', productCode);
             formData.append('productName', productName);
+            formData.append('productCapital', String(productCapital));
+            formData.append('productLocation', productLocation);
             formData.append('productPrice', String(productPrice));
             formData.append('productImage', productImage)
 
@@ -145,11 +164,13 @@ const ViewProductPage: React.FC = () => {
             setProductCode(productCode)
             setProductName(productName)
             setProductPrice(productPrice)
+            setProductCapital(productCapital)
+            setProductLocation(productLocation)
             setImageChangesDetected(false)
             setChangesDetected(false)
             setTempImage('')
             setRerenderKey((prev) => prev + 1)
-            setOriginalData({ productCode: productCode, productName: productName, productPrice: productPrice, productImage: productImage })
+            setOriginalData({ productCode: productCode, productName: productName, productPrice: productPrice, productCapital: productCapital, productLocation: productLocation, productImage: productImage })
         } catch (error) {
             console.error('Error updating product:', error);
             toast.error('Produk gagal diperbarui.', { autoClose: 3000 })
@@ -273,8 +294,27 @@ const ViewProductPage: React.FC = () => {
                         fullWidth
                         margin="normal"
                     />
+                    <TextField
+                        label="Lokasi Pengambilan Produk"
+                        value={productLocation}
+                        onChange={handleProductLocationChange}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        label="Modal Produk"
+                        type="number"
+                        value={productCapital}
+                        onChange={handleProductCapitalChange}
+                        fullWidth
+                        margin="normal"
+                    />
                     <Button
-                        disabled={loading || (!imageChangesDetected && (originalData.productCode === productCode) && (originalData.productName === productName) && (originalData.productPrice === productPrice))}
+                        disabled={loading || (!imageChangesDetected && (originalData.productCode === productCode) && 
+                            (originalData.productName === productName) && 
+                            (originalData.productPrice === productPrice) &&
+                            (originalData.productCapital === productCapital ) &&
+                            (originalData.productLocation === productLocation ))}
                         variant="contained"
                         color="secondary"
                         onClick={handleUpdateProduct}
@@ -326,6 +366,26 @@ const ViewProductPage: React.FC = () => {
                             </Typography>
                             <DialogContentText style={{ display: 'flex', alignItems: 'center' }}>
                                 {originalData.productPrice} <ChevronRightIcon /> {productPrice}
+                            </DialogContentText>
+                        </>
+                    )}
+                    {originalData.productCapital !== productCapital && (
+                        <>
+                            <Typography sx={{ fontWeight: 500 }}>
+                                Modal Produk
+                            </Typography>
+                            <DialogContentText style={{ display: 'flex', alignItems: 'center' }}>
+                                {originalData.productCapital} <ChevronRightIcon /> {productCapital}
+                            </DialogContentText>
+                        </>
+                    )}
+                    {originalData.productLocation !== productLocation && (
+                        <>
+                            <Typography sx={{ fontWeight: 500 }}>
+                                Lokasi Pengambilan Produk
+                            </Typography>
+                            <DialogContentText style={{ display: 'flex', alignItems: 'center' }}>
+                                {originalData.productLocation} <ChevronRightIcon /> {productLocation}
                             </DialogContentText>
                         </>
                     )}
