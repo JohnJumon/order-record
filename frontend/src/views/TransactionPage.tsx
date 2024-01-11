@@ -34,14 +34,14 @@ export const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
 
 function Row(props: RowProps) {
     const { row, rowNumber } = props;
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = React.useState(true);
     const navigate = useNavigate();
 
     const imageBaseUrl = `https://storage.googleapis.com/${import.meta.env.VITE_BUCKET_NAME}/`
 
     return (
         <React.Fragment>
-            <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
+            <TableRow sx={{ '& > *': { borderBottom: 'unset' }, backgroundColor: '#c8d9ed' }}>
                 <TableCell>
                     <IconButton
                         aria-label="expand row"
@@ -56,7 +56,6 @@ function Row(props: RowProps) {
                     {row.customer.customerName.toUpperCase()}
                 </TableCell>
                 <TableCell align="left">{formatDate(row.orderDate)}</TableCell>
-                <TableCell align="right">{formatPriceAsRupiah(row.deposit)}</TableCell>
                 <TableCell align="center">{row.isPaidOff ? "LUNAS" : "BELUM LUNAS"}</TableCell>
                 <TableCell align="center">
                     <Tooltip title='Lihat Transaksi'>
@@ -70,12 +69,18 @@ function Row(props: RowProps) {
                 <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{ margin: 1 }}>
-                            <Typography variant="h6" gutterBottom component="div">
-                                Daftar Produk Dipesan
-                            </Typography>
                             <Table size="small" aria-label="order-items">
                                 <TableHead>
                                     <TableRow>
+                                        <TableCell>Daftar Produk Dipesan</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell colSpan={7} align="left" sx={{ fontWeight: 500 }}>Deposit</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 500 }}>
+                                            {formatPriceAsRupiah(row.deposit)}
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow sx={{ borderBottomStyle: 'solid', borderWidth: '2px', borderColor: 'white' }}>
                                         <TableCell />
                                         <TableCell>Kode Produk</TableCell>
                                         <TableCell>Nama Produk</TableCell>
@@ -89,7 +94,7 @@ function Row(props: RowProps) {
                                 </TableHead>
                                 <TableBody>
                                     {row.items.map((item: OrderItem, index: number) => (
-                                        <TableRow key={index}>
+                                        <TableRow sx={{ borderStyle: 'solid', borderWidth: '2px', borderColor: 'white' }} key={index}>
                                             <TableCell align="center">
                                                 <LightTooltip title={<img src={imageBaseUrl + item.product.productImage} alt="Product" style={{ width: '100px', height: '100px', objectFit: 'cover', display: 'block', margin: 'auto', borderRadius: '16px' }} />}>
                                                     <IconButton>
@@ -158,7 +163,7 @@ export default function TransactionPage() {
             if (statusFilter === '') {
                 setOrders(sortedTransactions)
                 console.log('test')
-            } 
+            }
             else {
                 const filteredOrders = sortedTransactions.map((order: OrderData) => {
                     const filteredItems = order.items.filter((item: OrderItem) => item.status === statusFilter);
@@ -183,7 +188,6 @@ export default function TransactionPage() {
                 <TableCell>No. </TableCell>
                 <TableCell>Nama Pemesan</TableCell>
                 <TableCell align="left">Tanggal Pemesanan</TableCell>
-                <TableCell align="right">Deposit</TableCell>
                 <TableCell align="center">Status Pembayaran</TableCell>
                 <TableCell />
             </TableRow>
@@ -231,7 +235,7 @@ export default function TransactionPage() {
                     displayEmpty
                     inputProps={{ 'aria-label': 'Without label' }}
                 >
-                    <MenuItem value={''}>Status Barang</MenuItem>
+                    <MenuItem value={''}>Semua Status Barang</MenuItem>
                     <MenuItem value={0}>Order</MenuItem>
                     <MenuItem value={1}>Pick Up</MenuItem>
                     <MenuItem value={2}>Dikirim</MenuItem>
@@ -245,7 +249,7 @@ export default function TransactionPage() {
                     inputProps={{ 'aria-label': 'Without label' }}
                     sx={{ ml: 2 }}
                 >
-                    <MenuItem value={''}>Status Pembayaran</MenuItem>
+                    <MenuItem value={''}>Semua Status Pembayaran</MenuItem>
                     <MenuItem value={0}>Belum Lunas</MenuItem>
                     <MenuItem value={1}>Lunas</MenuItem>
                 </Select>
