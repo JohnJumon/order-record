@@ -49,6 +49,12 @@ app.put('/api/customer/:id', requireAuth, customerController.updateCustomer);
 app.put('/api/customer/:id/blacklist', requireAuth, customerController.blacklistCustomer);
 app.get('/api/customer/check/:number', requireAuth, customerController.checkCustomer);
 
+app.post('/api/admin', requireAuth, userController.createAdmin);
+app.get('/api/admin', requireAuth, userController.fetchAdmins);
+app.get('/api/admin/:id', requireAuth, userController.fetchAdmin);
+app.get('/api/admin/check/:username', requireAuth, userController.checkAdmin);
+app.put('/api/admin/:id', requireAuth, userController.updateAdmin);
+
 app.post('/api/login', userController.login)
 app.get('/api/logout', userController.logout)
 app.get('/api/check-auth', requireAuth, userController.checkAuth);

@@ -1,5 +1,4 @@
 import RequireAuth from "./views/RequireAuth"
-import MiniDrawer from "./views/components/Drawer"
 import { useLocation } from 'react-router-dom'
 
 interface AppProps {
@@ -12,7 +11,7 @@ function App(props: AppProps) {
   const showDrawer = location.pathname !== '/'
   return (
     <>
-      {showDrawer && <MiniDrawer><RequireAuth>{props.children}</RequireAuth></MiniDrawer>}
+      {showDrawer && <RequireAuth>{props.children}</RequireAuth>}
       {!showDrawer && props.children}
     </>
   )

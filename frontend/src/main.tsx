@@ -13,6 +13,9 @@ import ViewProductPage from './views/ViewProductPage.tsx'
 import ViewCustomerPage from './views/ViewCustomerPage.tsx'
 import LoginPage from './views/LoginPage.tsx'
 import axios from 'axios'
+import CreateAdmin from './views/CreateAdmin.tsx'
+import AdminPage from './views/AdminPage.tsx'
+import ViewAdminPage from './views/ViewAdminPage.tsx'
 axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
 axios.defaults.withCredentials = true;
 
@@ -73,6 +76,24 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             path='/pelanggan/:customerId'
             element={
               <ViewCustomerPage />
+            }
+          />
+          <Route
+            path='/tambah-admin'
+            element={
+              <CreateAdmin/>
+            }
+          />
+          <Route
+            path='/daftar-admin'
+            element={
+              <AdminPage/>
+            }
+          />
+          <Route
+            path='/admin/:adminId'
+            element={
+              <ViewAdminPage/>
             }
           />
         </Routes>

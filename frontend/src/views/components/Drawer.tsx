@@ -23,6 +23,8 @@ import ViewListIcon from '@mui/icons-material/ViewList';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import PeopleIcon from '@mui/icons-material/People';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AddModeratorIcon from '@mui/icons-material/AddModerator';
+import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import authStore from '../../stores/authStore';
 
 const drawerWidth = 240;
@@ -187,6 +189,45 @@ export default function MiniDrawer(props: DrawerProps) {
                             </Link>
                         </ListItem>
                     ))}
+                    {props.isMaster &&
+                        [
+                            { text: 'Tambah Admin', icon: <AddModeratorIcon />, to: '/tambah-admin' },
+                            { text: 'Daftar Admin', icon: <SupervisorAccountIcon />, to: '/daftar-admin' }
+                        ].map(({ text, icon, to }) => (
+                            <ListItem key={text} disablePadding sx={{ display: 'block' }}>
+                                <Link to={to} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                    <ListItemButton
+                                        sx={{
+                                            minHeight: 48,
+                                            justifyContent: open ? 'initial' : 'center',
+                                            px: 2.5,
+                                            fontWeight: location.pathname === to ? 'bold !important' : 'normal',
+                                            '&:hover': {
+                                                backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                                            },
+                                            '& span': {
+                                                fontWeight: location.pathname === to ? 'bold !important' : 'normal',
+                                                color: location.pathname === to ? 'primary.main' : 'inherit',
+                                            },
+                                        }}
+                                    >
+                                        <ListItemIcon
+                                            sx={{
+                                                minWidth: 0,
+                                                mr: open ? 3 : 'auto',
+                                                justifyContent: 'center',
+                                                color: location.pathname === to ? 'primary.main' : 'inherit',
+                                            }}
+                                        >
+                                            {icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} />
+                                    </ListItemButton>
+                                </Link>
+                            </ListItem>
+                        ))
+                    }
+
                     <ListItem disablePadding sx={{ display: 'block' }}>
                         <ListItemButton
                             sx={{
@@ -211,7 +252,7 @@ export default function MiniDrawer(props: DrawerProps) {
                                     color: 'inherit',
                                 }}
                             >
-                                <LogoutIcon/>
+                                <LogoutIcon />
                             </ListItemIcon>
                             <ListItemText primary={"Logout"} sx={{ opacity: open ? 1 : 0 }} />
                         </ListItemButton>
@@ -228,4 +269,5 @@ export default function MiniDrawer(props: DrawerProps) {
 
 interface DrawerProps {
     children: React.ReactNode
+    isMaster: boolean | null
 }

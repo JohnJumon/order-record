@@ -8,6 +8,7 @@ interface LoginForm {
 
 interface AuthStore {
     loggedIn: boolean | null;
+    isMaster: boolean | null;
     loginForm: LoginForm;
     updateUsername: (value: string) => void;
     updatePassword: (value: string) => void;
@@ -19,6 +20,7 @@ interface AuthStore {
 
 const authStore = create<AuthStore>((set) => ({
     loggedIn: null,
+    isMaster: null,
 
     loginForm: {
         username: '',
@@ -50,9 +52,10 @@ const authStore = create<AuthStore>((set) => ({
                 withCredentials: true,
             });
             const token = res.data.token;
+            const isMaster = res.data.isMaster
             localStorage.setItem('token', token);
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-            set({ loggedIn: true })
+            set({ loggedIn: true, isMaster: isMaster})
             return true;
         } catch (error) {
             console.error('Error during login:', error);
@@ -63,15 +66,15 @@ const authStore = create<AuthStore>((set) => ({
     checkAuth: async () => {
         const token = localStorage.getItem('token')
         if (!token) {
-            set({ loggedIn: false })
+            set({ loggedIn: false, isMaster: false })
         }
         else {
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
             try {
-                await axios.get('/check-auth')
-                set({ loggedIn: true })
+                const res = await axios.get('/check-auth')
+                set({ loggedIn: true, isMaster: res.data.isMaster})
             }catch(error){
-                set({ loggedIn: false})
+                set({ loggedIn: false, isMaster: false})
             }
             
         }
@@ -81,7 +84,7 @@ const authStore = create<AuthStore>((set) => ({
         delete axios.defaults.headers.common['Authorization'];
         localStorage.removeItem('token');
         await axios.get('/logout')
-        set({ loggedIn: false })
+        set({ loggedIn: false, isMaster: false })
     }
 }));
 

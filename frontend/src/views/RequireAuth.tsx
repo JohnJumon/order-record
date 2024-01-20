@@ -1,8 +1,10 @@
 import { Box, Button, Typography } from "@mui/material";
 import authStore from "../stores/authStore";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import noAccess from '../assets/noAccess.png'
+import React from "react";
+import MiniDrawer from "./components/Drawer";
 
 interface Props {
     children: React.ReactNode
@@ -11,12 +13,16 @@ interface Props {
 export default function RequireAuth(props: Props) {
     const store = authStore();
     const navigate = useNavigate();
+    const location = useLocation();
+    const currentPath = location.pathname;
     useEffect(() => {
         if (store.loggedIn === null) {
             store.checkAuth();
         }
     }, [])
-    if (!store.loggedIn) {
+    if (!store.loggedIn ||
+        (store.loggedIn && !store.isMaster && currentPath === '/tambah-admin')
+    ) {
         return (
             <Box
                 display="flex"
@@ -24,10 +30,9 @@ export default function RequireAuth(props: Props) {
                 alignItems="center"
                 justifyContent="center"
                 mx="auto"
-                height="60vh"
             >
-                <img src={noAccess} alt="noAccess" style={{ width: "50vw", marginBottom: "8px" }} />
-                <Typography variant="h6" gutterBottom style={{ textTransform: "uppercase", marginBottom: "0px", paddingBottom: "0px", textAlign:"center"}}>
+                <img src={noAccess} alt="noAccess" style={{ width: "50vw"}} />
+                <Typography variant="h6" gutterBottom style={{ textTransform: "uppercase", marginBottom: "0px", paddingBottom: "0px", textAlign: "center" }}>
                     No access
                 </Typography>
                 <Button
@@ -43,5 +48,6 @@ export default function RequireAuth(props: Props) {
             </Box>
         )
     }
-    return <>{props.children}</>
+    return <><MiniDrawer isMaster={store.isMaster}>{props.children}</MiniDrawer></>
+
 }

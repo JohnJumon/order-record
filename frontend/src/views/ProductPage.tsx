@@ -13,12 +13,17 @@ import TextField from '@mui/material/TextField';
 import { formatPriceAsRupiah } from './utility/utility';
 
 function Row(props: RowProps) {
+    const imageBaseUrl = `https://storage.googleapis.com/${import.meta.env.VITE_BUCKET_NAME}/`
+
     const { row, rowNumber } = props;
     const navigate = useNavigate();
     return (
         <React.Fragment>
             <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
                 <TableCell>{rowNumber}</TableCell>
+                <TableCell>
+                    <img src={imageBaseUrl + row.productImage} alt="Product" style={{ width: '100px', height: '100px', objectFit: 'cover', display: 'block', margin: 'auto', borderRadius: '16px' }} />
+                </TableCell>
                 <TableCell component="th" scope="row">
                     {row.productCode.toUpperCase()}
                 </TableCell>
@@ -28,7 +33,7 @@ function Row(props: RowProps) {
                 <TableCell align="right">{formatPriceAsRupiah(row.productPrice)}</TableCell>
                 <TableCell align="center">
                     <Tooltip title='Lihat Produk'>
-                        <IconButton color="primary" onClick={() => (navigate('/produk/'+row._id))}>
+                        <IconButton color="primary" onClick={() => (navigate('/produk/' + row._id))}>
                             <PageviewIcon />
                         </IconButton>
                     </Tooltip>
@@ -57,14 +62,15 @@ export default function ProductPage() {
     const filteredProducts = products.filter(
         (product) =>
             product.production && (
-            product.productCode.toUpperCase().includes(searchTerm.toUpperCase()) ||
-            product.productName.toUpperCase().includes(searchTerm.toUpperCase()) )
+                product.productCode.toUpperCase().includes(searchTerm.toUpperCase()) ||
+                product.productName.toUpperCase().includes(searchTerm.toUpperCase()))
     );
 
     const header = (
         <TableHead>
             <TableRow>
                 <TableCell>No. </TableCell>
+                <TableCell align="center">Gambar Produk </TableCell>
                 <TableCell>Kode Produk</TableCell>
                 <TableCell align="left">Nama Produk</TableCell>
                 <TableCell align="left">Lokasi Pengambilan</TableCell>
@@ -107,6 +113,7 @@ interface ProductData {
     production: boolean;
     productCapital: number;
     productLocation: string;
+    productImage: string;
 }
 
 interface RowProps {
